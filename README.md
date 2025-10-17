@@ -2,6 +2,8 @@
 
 Use like so:
 
+(First line is optional, use ; for comments)
+
 ```INI
 [ MASTER ]
 
