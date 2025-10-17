@@ -15,6 +15,7 @@ Prerequisites
 - ffmpeg installed and available on PATH.
 - A C++ build toolchain (if building from source): CMake, and a supported compiler of your choice.
 - Basic familiarity with the command line and INI files.
+- A 64-bit machine (unless building from source)
 
 Installing / Building from source
 
