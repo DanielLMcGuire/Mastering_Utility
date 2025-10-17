@@ -1,5 +1,7 @@
 # Daniel's Mastering Utility
 
+Install it, run masteringwizard executable to run through the prompts to configure your INI file.
+
 Use like so:
 
 (First line is optional, use ; for comments)
