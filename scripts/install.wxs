@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="Daniel's Mastering Utility" 
+           Language="1033" 
+           Version="1.0.0.0" 
+           Manufacturer="Daniel McGuire" 
+           UpgradeCode="6bca7486-4aae-4811-9806-b269736aa1b5"
+           InstallerVersion="500">
+    
+    <MediaTemplate EmbedCab="yes" />
+    
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+	<WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+    
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="DanielsMasterer">
+        <Component Id="MasteringWizardExe" Guid="*">
+          <File Id="MasteringWizardExeFile" Source="masteringwizard.exe" KeyPath="yes"/>
+        </Component>
+        <Component Id="MasteringUtilityExe" Guid="*">
+          <File Id="MasteringUtilityExeFile" Source="masteringutility.exe" KeyPath="yes"/>
+        </Component>
+      </Directory>
+    </StandardDirectory>
+    
+    <Feature Id="MainFeature" Title="Daniel's Mastering Utility" Level="1">
+      <ComponentRef Id="MasteringWizardExe"/>
+      <ComponentRef Id="MasteringUtilityExe"/>
+    </Feature>
+  </Package>
+</Wix>

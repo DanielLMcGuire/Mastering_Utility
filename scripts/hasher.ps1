@@ -1,0 +1,2 @@
+Get-FileHash -Path "masteringutil64.msi" -Algorithm SHA256 | Out-File -FilePath "masteringutil64.msi.sha256"
+Get-FileHash -Path "masteringutil64_setup.exe" -Algorithm SHA256 | Out-File -FilePath "masteringutil64-setup.exe.sha256"

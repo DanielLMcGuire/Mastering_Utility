@@ -1,0 +1,56 @@
+{
+  "version": 5,
+  "configurePresets": [
+    {
+      "name": "base-config",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      },
+      "condition": {
+        "type": "not",
+        "condition": {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Windows"
+        }
+      }
+    },
+    {
+      "name": "base-config-windows",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "enableMicrosoftCodeAnalysis": true
+        }
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "description": "Sets the build type to Debug",
+      "inherits": [ "base-config", "base-config-windows" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "Sets the build type to Release",
+      "inherits": [ "base-config", "base-config-windows" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ]
+}
