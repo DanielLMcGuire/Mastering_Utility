@@ -204,10 +204,14 @@ void MasteringUtility::ProcessAlbum(const Album& album, const std::string& iniFo
     try
     {
         std::cout << "Album: " << album.Title
-                  << " (" << album.Artist << ", " << album.Year << ")" << std::endl;
+            << " (" << album.Artist << ", " << album.Year << ")" << std::endl;
 
         if (!album.NewPath.empty())
             std::filesystem::create_directories(album.NewPath);
+
+        std::string workingDir = album.Path.empty()
+            ? iniFolder
+            : album.Path;
 
         for (const auto& song : album.SongsList)
         {
@@ -217,7 +221,7 @@ void MasteringUtility::ProcessAlbum(const Album& album, const std::string& iniFo
             else
                 tempSong.NewPath = album.NewPath + song.NewPath;
 
-            ProcessSong(tempSong, iniFolder);
+            ProcessSong(tempSong, workingDir);
         }
     }
     catch (const std::exception& ex) { std::cerr << "[ProcessAlbum] Exception: " << ex.what() << std::endl; }
@@ -230,7 +234,7 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
     try
     {
         std::cout << "Encoding: " << song.Title
-                  << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
+            << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
         std::ostringstream cmd;
         cmd << "ffmpeg -y "
@@ -244,13 +248,17 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
         if (!song.Year.empty())      cmd << "-metadata date=\"" << song.Year << "\" ";
         if (!song.Comment.empty())   cmd << "-metadata comment=\"" << song.Comment << "\" ";
         if (!song.Copyright.empty()) cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
+
+        if (song.Codec == "flac")        cmd << "-compression_level 12 ";
+        if (song.Codec == "libmp3lame")  cmd << "-qscale:a 3 ";
+
         cmd << "-metadata track=\"" << song.SortOrder << "\" ";
 
         cmd << "\"" << song.NewPath << "\"";
 
         std::string command = cmd.str();
 
-        // temporarily switch to INI folder
+        // temporarily switch to provided working folder (iniFolder may be album.Path or the original ini folder)
         auto oldCwd = std::filesystem::current_path();
         std::filesystem::current_path(iniFolder);
 
