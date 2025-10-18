@@ -27,20 +27,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Install Ninja (Linux & macOS)
+      if: runner.os != 'Windows'
+      run: |
+        sudo apt-get update -y || brew install ninja
+        sudo apt-get install -y ninja-build || true
+
     - name: Set build output directory
       id: strings
       shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Configure CMake
+    - name: Configure CMake with Ninja
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=Release
+        -G Ninja
         -S ${{ github.workspace }}
 
-    - name: Build
+    - name: Build with Ninja
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     - name: Upload Artifacts
