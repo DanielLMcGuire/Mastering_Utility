@@ -51,6 +51,9 @@ if(WIN32)
     enable_language(RC)
 endif()
 
+configure_file("src/launcher/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/launcher.rc" @ONLY)
+configure_file("src/wizard/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/wizard.rc" @ONLY)
+
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${ADDITIONAL_LINKER_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${ADDITIONAL_LINKER_FLAGS}")
 
@@ -64,13 +67,13 @@ set(MASTERINGUTIL_SOURCES
 add_executable(masteringutil_launcher
     ${MASTERINGUTIL_SOURCES}
     src/launcher/main.cpp
-    src/launcher/resources.rc
+    ${CMAKE_CURRENT_BINARY_DIR}/launcher.rc
 )
 set_target_properties(masteringutil_launcher PROPERTIES OUTPUT_NAME MasteringUtility)
 
 add_executable(masteringutil_wizard
     ${MASTERINGUTIL_SOURCES}
     src/wizard/main.cpp
-    src/wizard/resources.rc
+    ${CMAKE_CURRENT_BINARY_DIR}/wizard.rc
 )
 set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizard)
