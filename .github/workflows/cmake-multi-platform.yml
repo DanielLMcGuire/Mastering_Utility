@@ -49,7 +49,7 @@ jobs:
     - name: Build
       if: matrix.os != 'windows-latest'
       shell: bash
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     - name: Configure and Build
       if: matrix.os == 'windows-latest'
@@ -59,7 +59,7 @@ jobs:
       run: |
         CALL "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake -B "%CD%\build" -G Ninja -S "%CD%"
-        cmake --build "%CD%\build"
+        cmake --build "%CD%\build" --config Release
 
 
     - name: Upload Artifacts
