@@ -49,9 +49,9 @@ endif()
 
 if(WIN32)
     enable_language(RC)
-    configure_file("src/launcher/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/launcher.rc" @ONLY)
-    configure_file("src/wizard/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/wizard.rc" @ONLY)
 endif()
+configure_file("src/launcher/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/launcher.rc" @ONLY)
+configure_file("src/wizard/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/wizard.rc" @ONLY)
 
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${ADDITIONAL_LINKER_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${ADDITIONAL_LINKER_FLAGS}")
