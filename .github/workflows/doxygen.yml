@@ -3,7 +3,7 @@ name: Doxygen Docs
 on:
   push:
     branches:
-      - main  # or your default branch
+      - master
   workflow_dispatch:
 
 jobs:
