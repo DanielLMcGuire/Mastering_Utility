@@ -1,10 +1,9 @@
-name: Doxygen Docs
+name: Doxygen Documentation
 
 on:
   push:
     branches:
       - master
-  workflow_dispatch:
 
 jobs:
   build:
@@ -14,11 +13,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Generate and Deploy Doxygen Documentation
-        uses: DenverCoder1/doxygen-github-pages-action@v2.0.0
+      - name: Generate Doxygen Documentation
+        uses: docker://doxygen/doxygen:latest
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          args: /path/to/Doxyfile
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+        with:
           branch: gh-pages
           folder: docs/html
-          config_file: Doxyfile
-
