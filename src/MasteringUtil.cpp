@@ -258,7 +258,6 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
 
         std::string command = cmd.str();
 
-        // temporarily switch to provided working folder (iniFolder may be album.Path or the original ini folder)
         auto oldCwd = std::filesystem::current_path();
         std::filesystem::current_path(iniFolder);
 
@@ -271,7 +270,7 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
             else { std::cerr << "  ffmpeg failed with code: " << result << std::endl; if (attempt < 3) std::cerr << "  Retrying...\n"; }
         }
 
-        std::filesystem::current_path(oldCwd); // restore original cwd
+        std::filesystem::current_path(oldCwd);
 
         if (result != 0)
             std::cerr << "  Giving up on " << song.Title << " after 3 failed attempts\n";
