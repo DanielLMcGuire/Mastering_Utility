@@ -1,5 +1,8 @@
 # Mastering Utility
 
+![GitHub License](https://img.shields.io/github/license/DanielLMcGuire/Mastering_Utility)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml)
+
 Mastering Utility provides a simple markup format for tagging music files and re-encoding them as well.
 
 - Windows installers (MSI and EXE) are available from the Releases page: https://github.com/DanielLMcGuire/Mastering_Utility/releases
