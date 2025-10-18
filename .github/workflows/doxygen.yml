@@ -7,16 +7,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Doxygen
-        uses: JustEnoughMod/DoxygenDeployAction@1.0.1
+      - name: Generate and Deploy Doxygen Documentation
+        uses: DenverCoder1/doxygen-github-pages-action@v2.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: docs/html
           config_file: Doxyfile
+
