@@ -17,7 +17,7 @@ jobs:
       - name: Generate Doxygen Documentation
         uses: docker://doxygen/doxygen:latest
         with:
-          args: /path/to/Doxyfile
+          args: Doxyfile
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
