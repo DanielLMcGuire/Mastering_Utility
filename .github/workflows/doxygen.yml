@@ -23,17 +23,11 @@ jobs:
 
       - name: Generate Doxygen documentation
         run: doxygen Doxyfile
-
-      - name: Prepare clean artifact
-        run: |
-          mkdir docs/html_clean
-          rsync -a --no-links docs/html/ docs/html_clean/
       
       - name: Upload documentation artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v4
         with:
-          name: github-pages
-          path: docs/html_clean
+          path: docs/html
 
   deploy:
     needs: build
