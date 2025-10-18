@@ -53,12 +53,15 @@ jobs:
                 -G Ninja \
                 -S ${{ github.workspace }}
 
-    - name: Build
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          cmake --build "%CD%\build"
-        else
-          cmake --build ${{ steps.strings.outputs.build-output-dir }}
+    - name: Build (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: cmake --build "%CD%\build"
+    
+    - name: Build (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      shell: bash
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }}
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
