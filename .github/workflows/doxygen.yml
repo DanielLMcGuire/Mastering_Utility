@@ -1,23 +1,25 @@
-name: Doxygen Documentation
+name: Doxygen Docs
 
 on:
   push:
     branches:
       - master
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Generate Doxygen Documentation
-        uses: docker://doxygen/doxygen:latest
-        with:
-          args: Doxyfile
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Generate Documentation
+        run: doxygen Doxyfile
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
