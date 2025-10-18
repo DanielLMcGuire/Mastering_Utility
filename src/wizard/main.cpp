@@ -81,20 +81,25 @@ int main(int argc, char* argv[] )
                     throw std::runtime_error( "Song title cannot be empty." );
 
                 std::cout << "Enter Song Artist: ";
-                if ( !std::getline( std::cin, song.Artist ) || song.Artist.empty() )
+                if ( !std::getline( std::cin, song.Artist ) || song.Artist.empty() ) {
+                    std::cout << album.Artist << '\n';
                     song.Artist = album.Artist;
-
+                }
                 std::cout << "Enter Song Genre: ";
-                if ( !std::getline( std::cin, song.Genre ) || song.Genre.empty() )
+                if ( !std::getline( std::cin, song.Genre ) || song.Genre.empty() ) {
+					std::cout << album.Genre << '\n';
                     song.Genre = album.Genre;
-
+                }
                 std::cout << "Enter Song Year: ";
-                if ( !std::getline( std::cin, song.Year ) || song.Year.empty() )
+                if ( !std::getline( std::cin, song.Year ) || song.Year.empty() ) {
+					std::cout << album.Year << '\n';
                     song.Year = album.Year;
-
+			    }
                 std::cout << "Enter Song Copyright Info: ";
-                if ( !std::getline( std::cin, song.Copyright ) || song.Copyright.empty() )
+                if ( !std::getline( std::cin, song.Copyright ) || song.Copyright.empty() ) {
+					std::cout << album.Copyright << '\n';
                     song.Copyright = album.Copyright;
+				}   
 
                 std::cout << "Enter Filename: ";
                 if ( !std::getline( std::cin, song.NewPath ) || song.NewPath.empty() )
