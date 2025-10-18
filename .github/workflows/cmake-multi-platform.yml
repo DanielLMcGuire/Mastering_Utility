@@ -27,33 +27,42 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set build output directory
+      id: strings
+      shell: bash
+      run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
     - name: Set up MSVC
       if: matrix.os == 'windows-latest'
       uses: microsoft/setup-msbuild@v1
 
-    - name: Configure CMake with Ninja
+    # --- Configure Windows ---
+    - name: Configure CMake with Ninja (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && cmake -B "%CD%\build" -G Ninja -S "%CD%"'
+
+    # --- Configure Linux/macOS ---
+    - name: Configure CMake with Ninja (Linux/macOS)
+      if: matrix.os != 'windows-latest'
       shell: bash
-      run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          cmd.exe /C '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" && cmake -B "%CD%\build" -G Ninja -S "%CD%"'
-        else
-          cmake -B ${{ github.workspace }}/build \
+      run: cmake -B ${{ steps.strings.outputs.build-output-dir }} \
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
                 -DCMAKE_BUILD_TYPE=Release \
                 -G Ninja \
                 -S ${{ github.workspace }}
 
-    - name: Build with Ninja
+    - name: Build
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
           cmake --build "%CD%\build"
         else
-          cmake --build ${{ github.workspace }}/build
+          cmake --build ${{ steps.strings.outputs.build-output-dir }}
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
-        path: ${{ github.workspace }}/build
+        path: ${{ steps.strings.outputs.build-output-dir }}
         retention-days: 30
