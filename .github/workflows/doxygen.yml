@@ -25,8 +25,9 @@ jobs:
         run: doxygen Doxyfile
 
       - name: Upload documentation artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
+          name: github-pages
           path: docs/html
 
   deploy:
