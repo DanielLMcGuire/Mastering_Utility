@@ -51,15 +51,6 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
-    },
-    {
-      "name": "relwithdebinfo",
-      "displayName": "Release with Debug Info",
-      "description": "Sets the build type to Release with Debug Info",
-      "inherits": [ "base-config", "base-config-windows" ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-      }
     }
   ]
 }
