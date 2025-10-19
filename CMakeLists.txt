@@ -40,13 +40,13 @@ if(USE_LLD)
 endif()
 
 if(MSVC)
-    set(ADDITIONAL_RELEASE_FLAGS "/O2 /Ot /GL")
+    set(ADDITIONAL_RELEASE_FLAGS "/OX")
     set(ADDITIONAL_LINKER_FLAGS "/LTCG")
 
     set(ADDITIONAL_DEBUG_FLAGS "/Zi /Od /RTC1")
     set(ADDITIONAL_LINKER_DEBUG_FLAGS "/DEBUG")
 else()
-    set(ADDITIONAL_RELEASE_FLAGS "-O3 -march=x86-64 -mtune=generic -pipe -flto")
+    set(ADDITIONAL_RELEASE_FLAGS "-O3 -mtune=generic -pipe -flto")
     set(ADDITIONAL_LINKER_FLAGS "-flto")
 
     set(ADDITIONAL_DEBUG_FLAGS "-g -O0")
