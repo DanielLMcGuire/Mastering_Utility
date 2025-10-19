@@ -34,6 +34,10 @@ int main(int argc, char* argv[] )
             album.Path = ".";
             album.ID = i + 1;
 
+            std::cout << "Enter path to songs: ";
+            if ( !std::getline( std::cin, album.Path) || album.Path.empty() )
+                throw std::runtime_error( "Song path cannot be empty." );
+
             std::cout << "Enter Album Title: ";
             if ( !std::getline( std::cin, album.Title ) || album.Title.empty() )
                 throw std::runtime_error( "Album title cannot be empty." );
@@ -75,6 +79,9 @@ int main(int argc, char* argv[] )
                 song.SortOrder = j + 1;
                 song.Path = ".";
                 song.ID = j + 1;
+                std::cout << "Enter Song Source Filename: ";
+                if ( !std::getline( std::cin, song.Path ) || song.Path.empty() )
+                    throw std::runtime_error( "Song source filename cannot be empty." );
 
                 std::cout << "Enter Song Title: ";
                 if ( !std::getline( std::cin, song.Title ) || song.Title.empty() )
@@ -100,10 +107,9 @@ int main(int argc, char* argv[] )
 					std::cout << album.Copyright << '\n';
                     song.Copyright = album.Copyright;
 				}   
-
-                std::cout << "Enter Filename: ";
+                std::cout << "Enter New Filename: ";
                 if ( !std::getline( std::cin, song.NewPath ) || song.NewPath.empty() )
-                    throw std::runtime_error( "Failed to read song path." );
+                    throw std::runtime_error( "Failed to read song new filename." );
 
                 std::cout << "Enter Song Codec ( libmp3lame, flac, etc. ): ";
                 if ( !std::getline( std::cin, song.Codec ) || song.Codec.empty() )
