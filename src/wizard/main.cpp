@@ -138,7 +138,8 @@ int main(int argc, char* argv[])
         std::filesystem::path iniPath = arg1;
     }
     std::filesystem::path iniPath = "new.ini";
-    MasteringWizard::prompt("Enter path to save INI file", iniPath.string(), "INI file path cannot be empty.", &iniPath.string());
+    std::string iniPathStr = iniPath.string();
+    MasteringWizard::prompt("Enter path to save INI file", iniPathStr, "INI file path cannot be empty.", &iniPathStr);
     if (iniPath.extension() != ".ini")
     {
         iniPath += ".ini";
