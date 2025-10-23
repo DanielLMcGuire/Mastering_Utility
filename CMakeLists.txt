@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(masteringutil LANGUAGES CXX VERSION 0.1.2)
+project(masteringutil LANGUAGES CXX VERSION 0.1.3)
 
 execute_process(
     COMMAND git rev-parse --short HEAD
