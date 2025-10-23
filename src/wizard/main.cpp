@@ -209,14 +209,9 @@ int main(int argc, char* argv[])
         MasteringWizard::prompt("Would you like to master this album(s)? (y/n)", response, "Please enter 'y' or 'n'.", &response);
         if (response == 'y' || response == 'Y')
         {
-            std::string command = "masteringutility \"" + iniPath.string() + "\"";
-            int mastererRet = std::system(command.c_str());
-            if (mastererRet != 0)
-                std::cerr << "Mastering utility returned code " << mastererRet << "\n";
-			cleanup(mastererRet);
-			return mastererRet;
+            for (const auto& album : albums) masterer.ProcessAlbum(album, std::filesystem::path(album.Path).string());
+            std::cout << "Mastering complete.\n";
         }
-
     }
     catch (const std::exception& ex)
     {
