@@ -2,7 +2,7 @@
 #include <string>
 #include "../MasteringUtil.h"
 
-/// @brief Entry Point
+/// @brief CRT Entry Point
 int main( int argc, char* argv[] )
 {
     std::cout << "Daniel's Mastering Utility -- Masterer\n";
