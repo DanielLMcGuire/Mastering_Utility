@@ -86,12 +86,15 @@ public:
      * @brief Processes albums
      * 
      * @param album Album
-     * @param iniFolder Path to ini file
+     * @param iniFolder Path to ini folder
      */
     void ProcessAlbum(const Album& album, const std::string& iniFolder);
 
     /**
-     * @brief Processes
+     * @brief Processes songs
+     *
+	 * @param song Song
+	 * @param iniFolder Path to ini folder
      */
     void ProcessSong(const Song& song, const std::string& iniFolder);
 };
