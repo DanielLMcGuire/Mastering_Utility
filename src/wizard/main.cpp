@@ -183,6 +183,7 @@ int main(int argc, char* argv[])
                 song.SortOrder = j + 1;
                 song.Path = ".";
                 song.ID = j + 1;
+				song.Codec = "copy";
 
                 MasteringWizard::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
                 MasteringWizard::prompt("Enter Song Title", song.Title, "Song title cannot be empty.");
@@ -191,7 +192,7 @@ int main(int argc, char* argv[])
                 MasteringWizard::prompt("Enter Song Year", song.Year, "Song year cannot be empty", &album.Year);
                 MasteringWizard::prompt("Enter Song Copyright Info", song.Copyright, "Song copyright cannot be empty", &album.Copyright);
                 MasteringWizard::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
-                MasteringWizard::prompt("Enter Song Codec (libmp3lame, flac, etc.)", song.Codec, "Song codec cannot be empty.");
+                MasteringWizard::prompt("Enter Song Codec (libmp3lame, flac, etc.)", song.Codec, "Song codec cannot be empty.", &song.codec);
 
                 album.SongsList.push_back(song);
             }
