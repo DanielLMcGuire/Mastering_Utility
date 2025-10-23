@@ -123,7 +123,8 @@ namespace MasteringWizard
 int main(int argc, char* argv[])
 {
     std::cout << "Daniel's Mastering Utility -- Wizard\n";
-    if (argc < 1) {
+    std::filesystem::path iniPath;
+    if (argc > 1) {
         std::string arg0 = argv[0];
         std::string arg1 = argv[1];
         if (arg1 == "--help" || arg1 == "-h" || arg1 == "/?")
@@ -135,11 +136,12 @@ int main(int argc, char* argv[])
             return 0;
         }
 
-        std::filesystem::path iniPath = arg1;
+        iniPath = arg1;
     }
-    std::filesystem::path iniPath = "new.ini";
+    if (iniPath.empty()) iniPath = "new.ini";
     std::string iniPathStr = iniPath.string();
     MasteringWizard::prompt("Enter path to save INI file", iniPathStr, "INI file path cannot be empty.", &iniPathStr);
+    iniPath = iniPathStr;
     if (iniPath.extension() != ".ini")
     {
         iniPath += ".ini";
