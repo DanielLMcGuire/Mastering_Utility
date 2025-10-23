@@ -1,150 +1,233 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <limits>
+#include <cstdlib>
+#include <vector>
+#include <filesystem>
 #include "../MasteringUtil.h"
 
-int main(int argc, char* argv[] )
+/** @brief Cleanup and exit
+ * 
+ * @param code Exit code
+ */
+void cleanup(int code)
 {
-    std::cout << "Daniel's Mastering Utility -- Wizard\n";
+    if (code != 0) std::cout << "Exited with code " << code << '\n';
+    std::cout << std::endl;
+    std::exit(code);
+}
+/// @brief Mastering Wizard namespace
+namespace MasteringWizard 
+{
 
-    if (argc < 2 )
+    /** @brief Prompt user for input with validation
+     *
+     * @tparam T Type of the input value
+     * @param message Prompt message
+     * @param value Reference to store the input value
+     * @param errorMessage Error message to display on invalid input
+     * @param defaultValue Optional default value if user input is empty
+     */
+    template<typename T>
+    void prompt(const std::string& message, T& value, const std::string& errorMessage, const T* defaultValue = nullptr)
     {
-        std::cout << "Usage: " << argv[0] << " <OutINIPath>\n";
-        std::cout << "Run from inside album source directory.\n";
-        return 1;
+        std::string input;
+        while (true)
+        {
+            std::cout << message;
+            if (defaultValue) std::cout << " [" << *defaultValue << "]";
+            std::cout << ": ";
+
+            if (!std::getline(std::cin, input))
+            {
+                std::cerr << "Input error. " << errorMessage << std::endl;
+                continue;
+            }
+
+            if (input.empty())
+            {
+                if (defaultValue)
+                {
+                    value = *defaultValue;
+                    break;
+                }
+                else
+                {
+                    std::cerr << errorMessage << std::endl;
+                    continue;
+                }
+            }
+
+            if (input == "exit" || input == "quit")
+            {
+                cleanup(0);
+            }
+
+            if constexpr (std::is_same_v<T, std::string>) 
+            {
+                value = input;
+                break;
+            }
+            else if constexpr (std::is_same_v<T, char>) 
+            {
+                if (input.length() == 1)
+                {
+                    value = input[0];
+                    break;
+                }
+                else
+                {
+                    std::cerr << "Please enter a single character. " << errorMessage << std::endl;
+                    continue;
+                }
+            }
+            else
+            {
+                std::istringstream iss(input);
+                T temp;
+                char leftover;
+                if ((iss >> temp) && !(iss >> leftover))
+                {
+                    value = temp;
+                    break;
+                }
+                else
+                {
+                    std::cerr << "Invalid input type. " << errorMessage << std::endl;
+                }
+            }
+        }
     }
 
-    std::string iniPath = argv[1];
+    /** @brief Display a summary of the albums 
+     * @param albums Vector of albums to summarize
+     */
+    void displaySummary(const MasteringUtility::Albums& albums)
+    {
+        std::cout << "\n=== Album Summary ===\n";
+        for (const auto& album : albums)
+        {
+            std::cout << "Album: " << album.Title << " | Artist: " << album.Artist << " | Genre: " << album.Genre
+                      << " | Year: " << album.Year << " | Songs: " << album.SongsList.size() << "\n";
+            for (const auto& song : album.SongsList)
+            {
+                std::cout << "  [" << song.TrackNumber << "] " << song.Title << " (" << song.Artist << ")\n";
+            }
+            std::cout << "-------------------------\n";
+        }
+    }
+} // namespace MasteringWizard
+
+/// @brief CRT Entry Point
+int main(int argc, char* argv[])
+{
+    std::cout << "Daniel's Mastering Utility -- Wizard\n";
+    if (argc < 1) {
+        std::string arg0 = argv[0];
+        std::string arg1 = argv[1];
+        if (arg1 == "--help" || arg1 == "-h" || arg1 == "/?")
+        {
+            std::cout << "\nThis wizard will help you create an INI file for the mastering utility.\n"
+                      << "You can enter 'exit' or 'quit' at any prompt to exit the wizard.\n"
+                      << "Usage: masteringwizard [output_ini_file]\n";
+            cleanup(0);
+            return 0;
+        }
+
+        std::filesystem::path iniPath = arg1;
+    }
+    std::filesystem::path iniPath = "new.ini";
+    MasteringWizard::prompt("Enter path to save INI file", iniPath.string(), "INI file path cannot be empty.", &iniPath.string());
+    if (iniPath.extension() != ".ini")
+    {
+        iniPath += ".ini";
+    }
+
     MasteringUtility masterer;
     MasteringUtility::Albums albums;
 
     try
     {
         int albumCount = 1;
-        std::cout << "How many albums to create? ";
-        if ( !( std::cin >> albumCount ) || albumCount < 1 )
+        MasteringWizard::prompt("Enter number of albums to create", albumCount, "Must be a positive integer.", &albumCount);
+        if (albumCount < 1)
         {
-            throw std::runtime_error( "Invalid album count. Must be a positive number." );
+            albumCount = 1;
         }
-        std::cin.ignore( std::numeric_limits<std::streamsize>::max(), '\n' );
 
-        for ( int i = 0; i < albumCount; ++i )
+        for (int i = 0; i < albumCount; ++i)
         {
             MasteringUtility::Album album;
             album.Path = ".";
             album.ID = i + 1;
+            album.Copyright = "N/A";
 
-            std::cout << "Enter path to songs: ";
-            if ( !std::getline( std::cin, album.Path) || album.Path.empty() )
-                throw std::runtime_error( "Song path cannot be empty." );
-
-            std::cout << "Enter Album Title: ";
-            if ( !std::getline( std::cin, album.Title ) || album.Title.empty() )
-                throw std::runtime_error( "Album title cannot be empty." );
-
-            std::cout << "Enter Album Artist: ";
-            if ( !std::getline( std::cin, album.Artist ) || album.Artist.empty() )
-                throw std::runtime_error( "Album artist cannot be empty." );
-
-            std::cout << "Enter Album Genre: ";
-            if ( !std::getline( std::cin, album.Genre ) || album.Genre.empty() )
-                throw std::runtime_error( "Failed to read album genre." );
-
-            std::cout << "Enter Album Year: ";
-            if ( !std::getline( std::cin, album.Year ) || album.Year.empty() )
-                throw std::runtime_error( "Failed to read album year." );
-
-            std::cout << "Enter Album Copyright Info: ";
-            if ( !std::getline( std::cin, album.Copyright ) || album.Copyright.empty() )
-                throw std::runtime_error( "Failed to read album copyright." );
-
-            std::cout << "Enter Relative Path to save songs: ";
-            if ( !std::getline( std::cin, album.NewPath ) || album.NewPath.empty() )
-                throw std::runtime_error( "Failed to read album save path." );
-
-            std::cout << "Enter Relative Path to Album Art: ";
-            if ( !std::getline( std::cin, album.AlbumArt ) || album.AlbumArt.empty() )
-                throw std::runtime_error( "Failed to read album art path." );
+            MasteringWizard::prompt("Enter Album Title", album.Title, "Album title cannot be empty.");
+            MasteringWizard::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.");
+            MasteringWizard::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.");
+            MasteringWizard::prompt("Enter Album Year", album.Year, "Album year cannot be empty.");
+            MasteringWizard::prompt("Enter Album Copyright Info", album.Copyright, "Album copyright cannot be empty.", &album.Copyright);
+            MasteringWizard::prompt("Enter Relative Path to save songs", album.NewPath, "Album save path cannot be empty.");
+            MasteringWizard::prompt("Enter Relative Path to Album Art", album.AlbumArt, "Album art path cannot be empty.");
 
             int songCount = 0;
-            std::cout << "How many songs in \"" << album.Title << "\"? ";
-            if ( !( std::cin >> songCount ) || songCount < 0 )
-                throw std::runtime_error( "Invalid song count. Must be 0 or positive." );
-            std::cin.ignore( std::numeric_limits<std::streamsize>::max(), '\n' );
+            MasteringWizard::prompt("How many songs in \"" + album.Title + "\"?", songCount, "Must be 0 or a positive integer.", &songCount);
+            if (songCount < 0) throw std::runtime_error("Song count cannot be negative.");
 
-            for ( int j = 0; j < songCount; ++j )
+            for (int j = 0; j < songCount; ++j)
             {
                 MasteringUtility::Song song;
                 song.TrackNumber = j + 1;
                 song.SortOrder = j + 1;
                 song.Path = ".";
                 song.ID = j + 1;
-                std::cout << "Enter Song Source Filename: ";
-                if ( !std::getline( std::cin, song.Path ) || song.Path.empty() )
-                    throw std::runtime_error( "Song source filename cannot be empty." );
 
-                std::cout << "Enter Song Title: ";
-                if ( !std::getline( std::cin, song.Title ) || song.Title.empty() )
-                    throw std::runtime_error( "Song title cannot be empty." );
+                MasteringWizard::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
+                MasteringWizard::prompt("Enter Song Title", song.Title, "Song title cannot be empty.");
+                MasteringWizard::prompt("Enter Song Artist", song.Artist, "Song artist cannot be empty", &album.Artist);
+                MasteringWizard::prompt("Enter Song Genre", song.Genre, "Song genre cannot be empty", &album.Genre);
+                MasteringWizard::prompt("Enter Song Year", song.Year, "Song year cannot be empty", &album.Year);
+                MasteringWizard::prompt("Enter Song Copyright Info", song.Copyright, "Song copyright cannot be empty", &album.Copyright);
+                MasteringWizard::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
+                MasteringWizard::prompt("Enter Song Codec (libmp3lame, flac, etc.)", song.Codec, "Song codec cannot be empty.");
 
-                std::cout << "Enter Song Artist: ";
-                if ( !std::getline( std::cin, song.Artist ) || song.Artist.empty() ) {
-                    std::cout << album.Artist << '\n';
-                    song.Artist = album.Artist;
-                }
-                std::cout << "Enter Song Genre: ";
-                if ( !std::getline( std::cin, song.Genre ) || song.Genre.empty() ) {
-					std::cout << album.Genre << '\n';
-                    song.Genre = album.Genre;
-                }
-                std::cout << "Enter Song Year: ";
-                if ( !std::getline( std::cin, song.Year ) || song.Year.empty() ) {
-					std::cout << album.Year << '\n';
-                    song.Year = album.Year;
-			    }
-                std::cout << "Enter Song Copyright Info: ";
-                if ( !std::getline( std::cin, song.Copyright ) || song.Copyright.empty() ) {
-					std::cout << album.Copyright << '\n';
-                    song.Copyright = album.Copyright;
-				}   
-                std::cout << "Enter New Filename: ";
-                if ( !std::getline( std::cin, song.NewPath ) || song.NewPath.empty() )
-                    throw std::runtime_error( "Failed to read song new filename." );
-
-                std::cout << "Enter Song Codec ( libmp3lame, flac, etc. ): ";
-                if ( !std::getline( std::cin, song.Codec ) || song.Codec.empty() )
-                    throw std::runtime_error( "Song codec cannot be empty." );
-
-                album.SongsList.push_back( song );
+                album.SongsList.push_back(song);
             }
 
-            albums.push_back( album );
-        }
-        std::cout << "Would you like to master these? ( y/n ): ";
-        char response = 'n';
-        std::cin >> response;
-
-        if ( response == 'y' || response == 'Y' )
-        {
-            for ( const auto& album : albums )
-            {
-                masterer.ProcessAlbum( album, iniPath );
-            }
+            albums.push_back(album);
         }
 
-        masterer.SaveINI( albums, iniPath );
+        MasteringWizard::displaySummary(albums);
+
+        masterer.SaveINI(albums, iniPath.string());
         std::cout << "Wrote " << iniPath << "\n";
+
+        char response = 'n';
+        MasteringWizard::prompt("Would you like to master this album(s)? (y/n)", response, "Please enter 'y' or 'n'.", &response);
+        if (response == 'y' || response == 'Y')
+        {
+            std::string command = "masteringutility \"" + iniPath.string() + "\"";
+            int mastererRet = std::system(command.c_str());
+            if (mastererRet != 0)
+                std::cerr << "Mastering utility returned code " << mastererRet << "\n";
+			cleanup(mastererRet);
+			return mastererRet;
+        }
+
     }
-    catch ( const std::exception& ex )
+    catch (const std::exception& ex)
     {
         std::cerr << "[Fatal Error] " << ex.what() << "\n";
+        cleanup(1);
         return 1;
     }
-    catch (... )
+    catch (...)
     {
         std::cerr << "[Fatal Error] Unknown exception occurred.\n";
-        return 1;
+        cleanup(-1);
+        return -1;
     }
-
+    cleanup(0);
     return 0;
 }
