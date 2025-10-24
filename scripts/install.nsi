@@ -1,7 +1,7 @@
 !include "x64.nsh"
 !define APP_NAME "Daniel's Mastering Utility"
 !define COMP_NAME "Daniel McGuire"
-!define VERSION "0.1.6.0"
+!define VERSION "0.1.7.0"
 !define COPYRIGHT "(C) 2025 Daniel McGuire"
 !define DESCRIPTION "FFMPEG INI SYSTEM"
 !define INSTALLER_NAME "masteringutil64_setup.exe"
