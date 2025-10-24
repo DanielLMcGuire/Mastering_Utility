@@ -1,7 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
 .wix/
-
+*.[Aa]pp[Dd]ir/
+*.[Aa]pp[Ii]mage
 ### C++ ###
 # Prerequisites
 *.d
