@@ -14,8 +14,8 @@ Simplifies audio tagging using a metadata markup format and a Wizard to aid in c
 
 ## Download
 
-- **Windows**: Pre-built 64-bit installers (MSI and EXE) available on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
-- **Linux/macOS**: Download artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
+- **Windows/Linux**: Pre-built 64-bit installers (MSI and EXE) and AppImages available on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
+- **macOS**: Download artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
 - **Build from source**: See instructions below
 
 ## Prerequisites
