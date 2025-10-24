@@ -132,7 +132,6 @@ Any ffmpeg audio codec, including:
 <summary>Output:</summary>
 <pre>
 Daniel's Mastering Utility -- Wizard
-Enter path to save INI file [myproject.ini]: # [] is the default, being the 1st argument for this prompt
 Enter number of albums to create [1]: 1
 Enter Album Title: My Greatest Hits
 Enter Album Artist: John Doe
@@ -148,7 +147,7 @@ Enter Song Title: First Song
 Enter Song Artist [John Doe]: 
 Enter Song Genre [Rock]: 
 Enter Song Year [2025]: 
-Enter Song Copyright Info [(C) 2025 John Doe]:  2025 John Doe
+Enter Song Copyright Info [(C) 2025 John Doe]:
 Enter New Filename: 01 firstsong.mp3
 Enter Song Codec (libmp3lame, flac, etc.) [copy]: libmp3lame
 
