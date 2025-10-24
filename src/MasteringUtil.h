@@ -26,38 +26,51 @@ public:
     class Metadata
     {
     public:
-
+        /// @brief Numeric ID
         int ID{};
+        /// @brief  Title
         std::string Title;
+        /// @brief  Artist
         std::string Artist;
+        /// @brief  Album
         std::string Album;
+        /// @brief  Genre
         std::string Genre;
+        /// @brief  Release year
         std::string Year;
+        /// @brief  User comment
         std::string Comment;
+        /// @brief  Copyright info
         std::string Copyright;
+        /// @brief  File path
         std::string Path;
+        /// @brief  New file path
         std::string NewPath;
     };
     /// @brief Song Metadata
     class Song : public Metadata
     {
     public:
+        /// @brief  Track number
         int TrackNumber{};
+        /// @brief  Codec
         std::string Codec;
     };
 
-    /// @brief Vector of song
+    /// @brief Vector of songs
     using Songs = std::vector<Song>;
 
     /// @brief Album Metadata
     class Album : public Metadata
     {
     public:
+        /// @brief  Album art path
         std::string AlbumArt;
+        /// @brief  List of songs
         Songs SongsList;
     };
 
-    /// @brief Vector of album
+    /// @brief Vector of albums
     using Albums = std::vector<Album>;
     
     /**
