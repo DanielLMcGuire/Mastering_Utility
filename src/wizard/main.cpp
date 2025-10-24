@@ -100,22 +100,19 @@ namespace MasteringWizard
         }
     }
 
-    /** @brief Display a summary of the albums 
-     * @param albums Vector of albums to summarize
+    /** @brief Display a summary of an album
+     * @param album Album to summarize
      */
-    void displaySummary(const MasteringUtility::Albums& albums)
+    void displaySummary(const MasteringUtility::Album& album)
     {
         std::cout << "\n=== Album Summary ===\n";
-        for (const auto& album : albums)
+        std::cout << "Album: " << album.Title << " | Artist: " << album.Artist << " | Genre: " << album.Genre
+                  << " | Year: " << album.Year << " | Songs: " << album.SongsList.size() << "\n";
+        for (const auto& song : album.SongsList)
         {
-            std::cout << "Album: " << album.Title << " | Artist: " << album.Artist << " | Genre: " << album.Genre
-                      << " | Year: " << album.Year << " | Songs: " << album.SongsList.size() << "\n";
-            for (const auto& song : album.SongsList)
-            {
-                std::cout << "  [" << song.TrackNumber << "] " << song.Title << " (" << song.Artist << ")\n";
-            }
-            std::cout << "-------------------------\n";
+            std::cout << "  [" << song.TrackNumber << "] " << song.Title << " (" << song.Artist << ")\n";
         }
+        std::cout << "-------------------------\n";
     }
 } // namespace MasteringWizard
 
@@ -164,13 +161,13 @@ int main(int argc, char* argv[])
             MasteringUtility::Album album;
             album.Path = ".";
             album.ID = i + 1;
-            album.Copyright = "N/A";
+            std::string defaultCopyright = "N/A";
 
             MasteringWizard::prompt("Enter Album Title", album.Title, "Album title cannot be empty.");
             MasteringWizard::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.");
             MasteringWizard::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.");
             MasteringWizard::prompt("Enter Album Year", album.Year, "Album year cannot be empty.");
-            MasteringWizard::prompt("Enter Album Copyright Info", album.Copyright, "Album copyright cannot be empty.", &album.Copyright);
+            MasteringWizard::prompt("Enter Album Copyright Info", album.Copyright, "Album copyright cannot be empty.", &defaultCopyright);
             MasteringWizard::prompt("Enter Relative Path to save songs", album.NewPath, "Album save path cannot be empty.");
             MasteringWizard::prompt("Enter Relative Path to Album Art", album.AlbumArt, "Album art path cannot be empty.");
 
@@ -184,43 +181,49 @@ int main(int argc, char* argv[])
                 song.TrackNumber = j + 1;
                 song.Path = ".";
                 song.ID = j + 1;
-				song.Codec = "copy";
+				std::string defaultCodec = "copy";
 
                 MasteringWizard::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
                 MasteringWizard::prompt("Enter Song Title", song.Title, "Song title cannot be empty.");
-                MasteringWizard::prompt("Enter Song Artist", song.Artist, "Song artist cannot be empty", &album.Artist);
-                MasteringWizard::prompt("Enter Song Genre", song.Genre, "Song genre cannot be empty", &album.Genre);
-                MasteringWizard::prompt("Enter Song Year", song.Year, "Song year cannot be empty", &album.Year);
-                MasteringWizard::prompt("Enter Song Copyright Info", song.Copyright, "Song copyright cannot be empty", &album.Copyright);
+                MasteringWizard::prompt("Enter Song Artist", song.Artist, "Unexpected issue", &album.Artist);
+                MasteringWizard::prompt("Enter Song Genre", song.Genre, "Unexpected issue", &album.Genre);
+                MasteringWizard::prompt("Enter Song Year", song.Year, "Unexpected issue", &album.Year);
+                MasteringWizard::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", &album.Copyright);
                 MasteringWizard::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
-                MasteringWizard::prompt("Enter Song Codec (libmp3lame, flac, etc.)", song.Codec, "Song codec cannot be empty.", &song.Codec);
+                MasteringWizard::prompt("Enter Song Codec (libmp3lame, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
 
                 album.SongsList.push_back(song);
             }
-
-            albums.push_back(album);
+            MasteringWizard::displaySummary(album);
+            char addResponse = 'Y';
+            MasteringWizard::prompt("Would you like to add this album to the list? (y/n)", addResponse, "Please enter 'y' or 'n'.", &addResponse);
+            if (addResponse == 'y' || addResponse == 'Y')
+            {
+                albums.push_back(album);
+            }
         }
 
-        MasteringWizard::displaySummary(albums);
-
-        masterer.SaveINI(albums, iniPath.string());
-        std::cout << "Wrote " << iniPath << "\n";
-
-        char response = 'n';
-        MasteringWizard::prompt("Would you like to master this album(s)? (y/n)", response, "Please enter 'y' or 'n'.", &response);
-        if (response == 'y' || response == 'Y')
+        char saveResponse = 'Y';
+        std::string promptMsg = "Would you like to save \"" + iniPath.string() + "\"? (y/n)";
+        MasteringWizard::prompt(promptMsg, saveResponse, "Please enter 'y' or 'n'.", &saveResponse);
+        if (saveResponse != 'y' && saveResponse != 'Y')
+        {
+            masterer.SaveINI(albums, iniPath.string());
+            std::cout << "Wrote " << iniPath << "\n";
+        }
+        char masterResponse = 'n';
+        MasteringWizard::prompt("Would you like to master this album(s)? (y/n)", masterResponse, "Please enter 'y' or 'n'.", &masterResponse);
+        if (masterResponse == 'y' || masterResponse == 'Y')
         {
             for (const auto& album : albums) masterer.ProcessAlbum(album, std::filesystem::path(album.Path).string());
             std::cout << "Mastering complete.\n";
         }
-    }
-    catch (const std::exception& ex)
+    } catch (const std::exception& ex)
     {
         std::cerr << "[Fatal Error] " << ex.what() << "\n";
         cleanup(1);
         return 1;
-    }
-    catch (...)
+    } catch (...)
     {
         std::cerr << "[Fatal Error] Unknown exception occurred.\n";
         cleanup(-1);
