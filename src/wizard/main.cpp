@@ -182,7 +182,6 @@ int main(int argc, char* argv[])
             {
                 MasteringUtility::Song song;
                 song.TrackNumber = j + 1;
-                song.SortOrder = j + 1;
                 song.Path = ".";
                 song.ID = j + 1;
 				song.Codec = "copy";

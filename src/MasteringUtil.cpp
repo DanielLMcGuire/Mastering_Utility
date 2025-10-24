@@ -122,8 +122,8 @@ void MasteringUtility::ParseINI(const std::string& albumINI, Albums& albums)
                     {
                         song.Title  = cleanString(args[0]);
                         song.Artist = cleanString(args[1]);
-                        try { song.SortOrder = std::stoi(args[2]); }
-                        catch (...) { std::cerr << "[ParseINI] Warning: invalid sort order '" << args[2] << "'\n"; song.SortOrder = 0; }
+                        try { song.TrackNumber = std::stoi(args[2]); }
+                        catch (...) { std::cerr << "[ParseINI] Warning: invalid track number '" << args[2] << "'\n"; song.TrackNumber = 0; }
                         song.Path    = cleanString(args[3]);
                         song.NewPath = cleanString(args[4]);
                         song.Codec   = cleanString(args[5]);
@@ -252,7 +252,7 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
         if (song.Codec == "flac")        cmd << "-compression_level 12 ";
         if (song.Codec == "libmp3lame")  cmd << "-qscale:a 3 ";
 
-        cmd << "-metadata track=\"" << song.SortOrder << "\" ";
+        cmd << "-metadata track=\"" << song.TrackNumber << "\" ";
 
         cmd << "\"" << song.NewPath << "\"";
 

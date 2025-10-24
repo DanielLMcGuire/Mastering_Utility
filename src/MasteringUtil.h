@@ -43,7 +43,6 @@ public:
     {
     public:
         int TrackNumber{};
-        int SortOrder{};
         std::string Codec;
     };
 
