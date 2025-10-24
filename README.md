@@ -5,6 +5,7 @@
 
 Simplifies audio tagging using a metadata markup format and a Wizard to aid in creating the format.
 
+
 ## What does it do?
 
 - Organize multiple albums and tracks in a single configuration file
@@ -14,9 +15,11 @@ Simplifies audio tagging using a metadata markup format and a Wizard to aid in c
 
 ## Download
 
-- **Windows/Linux**: Pre-built 64-bit installers (MSI and EXE) and AppImages available on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
+- **Windows<sup>&dagger;</sup>/Linux**: Pre-built 64-bit installers (MSI and EXE) and AppImages available on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
 - **macOS**: Download artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
 - **Build from source**: See instructions below
+
+<sub>&dagger; Since this project is in beta, releases use the latest Insider release of MSVC.</sub>
 
 ## Prerequisites
 
