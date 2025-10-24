@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(masteringutil LANGUAGES CXX VERSION 0.1.5)
+project(masteringutil LANGUAGES CXX VERSION 0.1.6)
 
 # --- Build Defaults ----------------------------------------------------------
 set(CMAKE_CXX_STANDARD 17)
