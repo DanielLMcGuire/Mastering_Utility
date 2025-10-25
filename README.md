@@ -53,7 +53,7 @@ Interactive INI creator.
 
 ```bash
 # Create new configuration
-./masteringwizard output.ini
+./masteringwizard --inifile="output.ini"
 
 # Show help
 ./masteringwizard --help
@@ -73,7 +73,7 @@ Prompts for:
 Processes the INI file and encodes all tracks.
 
 ```bash
-./masteringutility myalbum.ini
+./masteringutility --inifile="myalbum.ini"
 ```
 
 It will:
@@ -117,8 +117,8 @@ song <ID> ("Title", "Artist", TrackNumber, "SourceFile", "OutputFile", "Codec", 
 ## Example Workflow
 
 ```bash
-./masteringwizard myproject.ini
-./masteringutility myproject.ini
+./masteringwizard -i="myproject.ini"
+./masteringutility -i="myproject.ini"
 ```
 
 Wizard will prompt for album/song info and generate a ready-to-use INI file.
