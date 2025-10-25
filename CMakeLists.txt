@@ -106,6 +106,7 @@ set(MASTERINGUTIL_SOURCES
 add_executable(masteringutil_launcher
     ${MASTERINGUTIL_SOURCES}
     src/launcher/main.cpp
+    src/argumentParser.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/launcher.rc
 )
 set_target_properties(masteringutil_launcher PROPERTIES OUTPUT_NAME MasteringUtility)
@@ -113,6 +114,7 @@ set_target_properties(masteringutil_launcher PROPERTIES OUTPUT_NAME MasteringUti
 add_executable(masteringutil_wizard
     ${MASTERINGUTIL_SOURCES}
     src/wizard/main.cpp
+    src/argumentParser.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/wizard.rc
 )
 set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizard)

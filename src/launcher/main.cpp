@@ -1,26 +1,31 @@
 #include <iostream>
 #include <string>
+#include <filesystem>
 #include "../MasteringUtil.h"
+#include "../argumentParser.h"
 
 /// @brief CRT Entry Point
 int main( int argc, char* argv[] )
 {
     std::cout << "Daniel's Mastering Utility -- Masterer\n";
 
-    if ( argc < 2 )
-    {
-        std::cout << "Usage: " << argv[0] << " <InputINIPath>\n";
-        return 1;
-    }
-
-    std::string iniPath = argv[1];
-    if ( iniPath.empty() )
-    {
-        std::cerr << "Error: Provided INI path is empty.\n";
-        return 1;
-    }
-
     MasteringUtility masterer;
+
+    ArgParser* parser = new ArgParser;
+    parser->registerArg("help", ArgParser::ArgType::Bool, 'h');
+    parser->registerArg("inifile", ArgParser::ArgType::String, 'f');
+
+    parser->parse(argc, argv);
+
+    std::filesystem::path iniPath{ parser->f_string("inifile") };
+    if (iniPath.empty())
+    {
+        if (argc > 1 && std::filesystem::exists(argv[1]))
+            iniPath = argv[1];
+        else
+            return 1;
+    }
+    delete parser;
     try
     {
         masterer.Master( iniPath );
@@ -34,7 +39,7 @@ int main( int argc, char* argv[] )
     catch ( ... )
     {
         std::cerr << "Unknown error during mastering.\n";
-        return 1;
+        return -1;
     }
 
     return 0;
