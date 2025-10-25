@@ -19,7 +19,7 @@ Simplifies audio tagging using a metadata markup format and a Wizard to aid in c
 - **macOS**: Download artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
 - **Build from source**: See instructions below
 
-<sub>&dagger; Since this project is in beta, releases use the latest Insider release of MSVC.</sub>
+<sub>&dagger; Since this project is in beta, releases use the latest Insider release of MSVC 19. Action artifacts do not however.</sub>
 
 ## Prerequisites
 
