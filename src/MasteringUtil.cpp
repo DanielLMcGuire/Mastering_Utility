@@ -226,11 +226,11 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
         std::cout << "Encoding: " << song.Title
             << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
-		std::filesystem::path new_songPath = newFolder / song.NewPath;
+        std::filesystem::path new_songPath = newFolder / song.NewPath;
 
         std::ostringstream cmd;
         cmd << "ffmpeg -y "
-            << "-i \"" << new_songPath << "\" "
+            << "-i \"" << song.Path << "\" "  // ✅ Use song.Path as INPUT
             << "-c:a " << song.Codec << " ";
 
         if (!song.Title.empty())     cmd << "-metadata title=\"" << song.Title << "\" ";
@@ -246,7 +246,7 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
 
         cmd << "-metadata track=\"" << song.TrackNumber << "\" ";
 
-        cmd << "\"" << song.NewPath << "\"";
+        cmd << "\"" << new_songPath.string() << "\"";  // ✅ Use new_songPath as OUTPUT
 
         std::string command = cmd.str();
 
