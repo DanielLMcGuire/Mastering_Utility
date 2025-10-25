@@ -33,7 +33,7 @@ static std::vector<std::string> splitArgs(const std::string& argStr)
         if (c == '"')
         {
             inQuotes = !inQuotes;
-            current.push_back(c);
+            continue;             
         }
         else if (c == ',' && !inQuotes)
         {
@@ -45,9 +45,11 @@ static std::vector<std::string> splitArgs(const std::string& argStr)
             current.push_back(c);
         }
     }
+
     if (!current.empty()) args.push_back(trim(current));
     return args;
 }
+
 
 void MasteringUtility::ParseINI(const std::filesystem::path& albumINI, Albums& albums)
 {

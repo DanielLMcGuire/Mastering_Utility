@@ -19,7 +19,7 @@
 #include <vector>
 #include <filesystem>
 
-/// @brief  Mastering Utility
+ /// @brief  Mastering Utility
 class MasteringUtility
 {
 public:
@@ -44,10 +44,25 @@ public:
         /// @brief  Copyright info
         std::string Copyright;
         /// @brief  File path
-        std::string Path;
+        std::filesystem::path Path;
         /// @brief  New file path
-        std::string NewPath;
+        std::filesystem::path NewPath;
+
+        /// @brief Equality operator for Metadata
+        bool operator==(const Metadata& other) const {
+            return ID == other.ID &&
+                Title == other.Title &&
+                Artist == other.Artist &&
+                Album == other.Album &&
+                Genre == other.Genre &&
+                Year == other.Year &&
+                Comment == other.Comment &&
+                Copyright == other.Copyright &&
+                Path == other.Path &&
+                NewPath == other.NewPath;
+        }
     };
+
     /// @brief Song Metadata
     class Song : public Metadata
     {
@@ -56,6 +71,13 @@ public:
         int TrackNumber{};
         /// @brief  Codec
         std::string Codec;
+
+        /// @brief Equality operator for Song
+        bool operator==(const Song& other) const {
+            return Metadata::operator==(other) &&
+                TrackNumber == other.TrackNumber &&
+                Codec == other.Codec;
+        }
     };
 
     /// @brief Vector of songs
@@ -69,11 +91,18 @@ public:
         std::string AlbumArt;
         /// @brief  List of songs
         Songs SongsList;
+
+        /// @brief Equality operator for Album
+        bool operator==(const Album& other) const {
+            return Metadata::operator==(other) &&
+                AlbumArt == other.AlbumArt &&
+                SongsList == other.SongsList; 
+        }
     };
 
     /// @brief Vector of albums
     using Albums = std::vector<Album>;
-    
+
     /**
      *  @brief Masterer
      *  @param albumINI Path to ini file
@@ -82,12 +111,12 @@ public:
 
     /**
      * @brief INI Parser
-     * 
+     *
      * @param albumINI Path to ini file
      * @param albums Empty vector of Albums to be returned
      */
     void ParseINI(const std::filesystem::path& albumINI, Albums& albums);
-    
+
     /**
      * @brief Save albums to an INI-like file
      * @param albums Vector of albums to save
@@ -97,7 +126,7 @@ public:
 
     /**
      * @brief Processes albums
-     * 
+     *
      * @param album Album
      * @param newFolder Path to new folder
      */
@@ -106,8 +135,8 @@ public:
     /**
      * @brief Processes songs
      *
-	 * @param song Song
-	 * @param newFolder Path to new folder
+     * @param song Song
+     * @param newFolder Path to new folder
      */
     void ProcessSong(const Song& song, const std::filesystem::path& newFolder);
 };
