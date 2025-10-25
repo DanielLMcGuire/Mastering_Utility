@@ -53,6 +53,12 @@ jobs:
       shell: bash
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} 
 
+    - name: Run Unit Tests (Linux and macOS)
+      if: matrix.os != 'windows-latest'
+      shell: bash
+      run: ${{ steps.strings.outputs.build-output-dir }}/MasteringTests
+
+
     - name: Configure and Build (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
@@ -62,6 +68,11 @@ jobs:
         CALL "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake -B "%CD%\build" -G Ninja -S "%CD%"
         cmake --build "%CD%\build" 
+    - name: Run Unit Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: "%CD%\build\MasteringTests.exe"
+
 
 
     - name: Upload Artifacts (All)
