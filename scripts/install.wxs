@@ -3,7 +3,7 @@
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="Daniel's Mastering Utility" 
            Language="1033" 
-           Version="0.1.7" 
+           Version="0.8.0" 
            Manufacturer="Daniel McGuire" 
            UpgradeCode="6bca7486-4aae-4811-9806-b269736aa1b5"
            InstallerVersion="500">
