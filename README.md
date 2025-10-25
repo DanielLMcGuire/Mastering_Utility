@@ -4,187 +4,140 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml)
 
 Simplifies audio tagging using a metadata markup format and a Wizard to aid in creating the format.
+Includes a C++ tagging API (Apache 2.0) and an Argument Parser library (MIT).
 
+> ⚠️ API docs are still in progress.
 
-## What does it do?
+## Features
 
-- Organize multiple albums and tracks in a single configuration file
-- Batch re-encode audio files (WAV, FLAC, MP3, etc.) with consistent quality settings
-- Automatically apply metadata tags (title, artist, album, track number, year, genre, copyright)
-- Maintain a structured workflow for audio mastering projects
+- Manage multiple albums and tracks via a single INI config file
+- Batch re-encode audio files (WAV, FLAC, MP3, etc.) with consistent quality
+- Auto-apply metadata tags (title, artist, album, track number, year, genre, copyright)
+- Keep a structured workflow for mastering projects
 
 ## Download
 
-- **Windows<sup>&dagger;</sup>/Linux**: Pre-built 64-bit installers (MSI and EXE) and AppImages available on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
-- **macOS**: Download artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
-- **Build from source**: See instructions below
+- **Windows / Linux**: 64-bit installers (MSI/EXE) and AppImages on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
+- **macOS**: Artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
+- **Build from source**: See below
 
-<sub>&dagger; Since this project is in beta, releases use the latest Insider release of MSVC 19. Action artifacts do not however.</sub>
+<sub>Beta note: Windows prebuilts use the latest Insider release of MSVC. Action artifacts don’t.</sub>
 
 ## Prerequisites
 
-### Required
-- **ffmpeg** - Must be installed and available in your system PATH
-  - Test with: `ffmpeg -version`
-  - Download from: https://ffmpeg.org/download.html
-
-### For building from source
-- CMake 3.10 or higher
-- C++17 compatible compiler (GCC, Clang, MSVC, etc.)
-- 64-bit system (Recommended)
+- **ffmpeg** in your system PATH (`ffmpeg -version`) – [Download here](https://ffmpeg.org/download.html)  
+- For building: CMake 3.10+, C++17 compiler, 64-bit system recommended
 
 ## Installation
 
-### Option 1: Use pre-built binaries
-Download the appropriate installer for your platform from the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases).
+### Pre-built binaries
+Grab the installer for your platform from the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases).
 
-### Option 2: Build from source
-
+### Build from source
 ```bash
 git clone --depth=1 https://github.com/DanielLMcGuire/Mastering_Utility.git
 cd Mastering_Utility
 
 cmake -S . -B build
-# Optional: use Ninja for faster compilation
+# Optional: use Ninja for faster build
 # cmake -S . -B build -G Ninja
 
 cmake --build build
-```
+````
 
 ## Usage
 
-The utility consists of two tools:
-
 ### 1. Mastering Wizard (`masteringwizard`)
-Interactive tool to create INI configuration files.
+
+Interactive INI creator.
 
 ```bash
-# Create a new configuration file
+# Create new configuration
 ./masteringwizard output.ini
 
 # Show help
 ./masteringwizard --help
 ```
 
-The wizard will prompt you for:
-- Number of albums
-- Album metadata (title, artist, genre, year, copyright, album art path)
-- Output directory for processed files
-- Song information (source file, title, artist, track number, output filename)
-- Audio codec settings (libmp3lame, flac, copy, etc.)
+Prompts for:
 
-**Tip**: You can type `exit` or `quit` at any prompt to exit the wizard.
+* Album metadata (title, artist, genre, year, copyright, art)
+* Output directory
+* Songs (source file, title, artist, track number, output file)
+* Audio codec settings
+
+**Tip:** Type `exit` or `quit` anytime to leave the wizard.
 
 ### 2. Mastering Utility (`masteringutility`)
+
 Processes the INI file and encodes all tracks.
 
 ```bash
-# Process an INI configuration file
 ./masteringutility myalbum.ini
 ```
 
-This will:
-- Read album and song metadata from the INI file
-- Create output directories as specified
-- Re-encode each track with ffmpeg using your chosen codec
-- Apply all metadata tags to the output files
-- Retry failed conversions up to 3 times
+It will:
+
+* Read album/song metadata
+* Create output directories
+* Re-encode tracks via ffmpeg
+* Apply all metadata tags
+* Retry failed conversions up to 3 times
 
 ## INI File Format
 
-The INI file uses a simple custom format:
-
 ```ini
-album 1 ("Album Title", "Artist Name", "© 2025 Copyright", "cover.jpg", "./source", "./output", "Genre", "2025", "Optional comment")
+album 1 ("Album Title", "Artist Name", "© 2025 Copyright", "cover.jpg", "./source", "./output", "Genre", "2025", "Comment")
 {
-    song 1 ("Track Title", "Artist Name", 1, "input.wav", "01-track.mp3", "libmp3lame", "Genre", "2025", "Optional comment")
+    song 1 ("Track Title", "Artist Name", 1, "input.wav", "01-track.mp3", "libmp3lame", "Genre", "2025", "Comment")
     song 2 ("Another Track", "Artist Name", 2, "input2.flac", "02-track.flac", "flac", "Genre", "2025")
-}
-
-album 2 ("Second Album", "Different Artist", "N/A", "art.jpg", "./", "./album2", "Rock", "2024")
-{
-    song 1 ("Song One", "Different Artist", 1, "song1.wav", "song1.mp3", "libmp3lame", "Rock", "2024")
 }
 ```
 
-### Album syntax
+**Album syntax:**
+
 ```
 album <ID> ("Title", "Artist", "Copyright", "AlbumArtPath", "SourcePath", "OutputPath", "Genre", "Year", "Comment")
 ```
 
-### Song syntax
+**Song syntax:**
+
 ```
 song <ID> ("Title", "Artist", TrackNumber, "SourceFile", "OutputFile", "Codec", "Genre", "Year", "Comment")
 ```
 
-### Supported codecs
-Any ffmpeg audio codec, including:
-- `libmp3lame` - MP3 encoding (VBR quality 3 by default)
-- `flac` - FLAC lossless encoding (compression level 12 by default)
-- `aac` - AAC encoding
-- `libopus` - Opus encoding
-- `copy` - Copy audio stream without re-encoding (The wizard will default to this)
+**Supported codecs:** Any ffmpeg audio codec:
+
+* `libmp3lame` – MP3 (VBR quality 3 default)
+* `flac` – FLAC lossless (compression 12 default)
+* `aac` – AAC
+* `libopus` – Opus
+* `copy` – Copy stream without re-encoding
 
 ## Example Workflow
 
 ```bash
 ./masteringwizard myproject.ini
-```
-<details>
-
-<summary>Output:</summary>
-<pre>
-Daniel's Mastering Utility -- Wizard
-Enter number of albums to create [1]: 1
-Enter Album Title: My Greatest Hits
-Enter Album Artist: John Doe
-Enter Album Genre: Rock
-Enter Album Year: 2025
-Enter Album Copyright Info [N/A]: (C) 2025 John Doe
-Enter Relative Path to save songs: ./output
-Enter Relative Path to Album Art: cover.jpg
-How many songs in "My Greatest Hits"? [0]: 1
-
-Enter Song Source Filename: track1.wav
-Enter Song Title: First Song
-Enter Song Artist [John Doe]: 
-Enter Song Genre [Rock]: 
-Enter Song Year [2025]: 
-Enter Song Copyright Info [(C) 2025 John Doe]:
-Enter New Filename: 01 firstsong.mp3
-Enter Song Codec (libmp3lame, flac, etc.) [copy]: libmp3lame
-
-=== Album Summary ===
-Album: My Greatest Hits | Artist: John Doe | Genre: Rock | Year: 2025 | Songs: 1
-  [1] First Song (John Doe)
--------------------------
-Would you like to add this album to the list? (y/n) [Y]: y
-Would you like to save "myalbum.ini"? (y/n) [Y]: y
-Wrote myproject.ini
-Would you like to master this album(s)? (y/n) [n]: n
-</pre>
-</details>
-
-```bash
 ./masteringutility myproject.ini
 ```
 
-## AI Generated Content Disclosure
+Wizard will prompt for album/song info and generate a ready-to-use INI file.
 
-- Over 80% of the code is written manually
-- GitHub Actions workflows and some scripts are primarily AI-generated (verified for correctness)
-- All issue responses are manually written
-- All AI Generated documentation is checked to ensure that they accurately describe the project
-- Issues made by me (@DanielLMcGuire) are AI generated if they start with `(autogenerated)`
+## AI Content Disclosure
+
+* 80%+ of code written manually
+* GitHub Actions/workflows partially AI-generated (checked)
+* Issue responses manually written
+* `(autogenerated)` tag marks AI-generated issues
 
 ## License
 
-See the [LICENSE](LICENSE) file for details.
+See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
+Issues and PRs welcome.
 
 ## Support
 
-For issues, questions, or feature requests, please use the [GitHub Issues page](https://github.com/DanielLMcGuire/Mastering_Utility/issues).
+Use the [GitHub Issues page](https://github.com/DanielLMcGuire/Mastering_Utility/issues) for questions or feature requests.
