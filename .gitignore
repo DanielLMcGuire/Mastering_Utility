@@ -1,8 +1,12 @@
-# Created by https://www.toptal.com/developers/gitignore/api/c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
 .wix/
+*.wixpdb
 *.[Aa]pp[Dd]ir/
 *.[Aa]pp[Ii]mage
+.vscode/
+
+# Created by https://www.toptal.com/developers/gitignore/api/c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
+
 ### C++ ###
 # Prerequisites
 *.d
@@ -769,4 +773,3 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
-*.wixpdb
