@@ -17,6 +17,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <filesystem>
 
 /// @brief  Mastering Utility
 class MasteringUtility
@@ -77,7 +78,7 @@ public:
      *  @brief Masterer
      *  @param albumINI Path to ini file
      */
-    void Master(const std::string& albumINI);
+    void Master(const std::filesystem::path& albumINI);
 
     /**
      * @brief INI Parser
@@ -85,28 +86,28 @@ public:
      * @param albumINI Path to ini file
      * @param albums Empty vector of Albums to be returned
      */
-    void ParseINI(const std::string& albumINI, Albums& albums);
+    void ParseINI(const std::filesystem::path& albumINI, Albums& albums);
     
     /**
      * @brief Save albums to an INI-like file
      * @param albums Vector of albums to save
      * @param iniFile Path to output INI file
      */
-    void SaveINI(const Albums& albums, const std::string& iniFile);
+    void SaveINI(const Albums& albums, const std::filesystem::path& iniFile);
 
     /**
      * @brief Processes albums
      * 
      * @param album Album
-     * @param iniFolder Path to ini folder
+     * @param newFolder Path to new folder
      */
-    void ProcessAlbum(const Album& album, const std::string& iniFolder);
+    void ProcessAlbum(const Album& album);
 
     /**
      * @brief Processes songs
      *
 	 * @param song Song
-	 * @param iniFolder Path to ini folder
+	 * @param newFolder Path to new folder
      */
-    void ProcessSong(const Song& song, const std::string& iniFolder);
+    void ProcessSong(const Song& song, const std::filesystem::path& newFolder);
 };

@@ -49,7 +49,7 @@ static std::vector<std::string> splitArgs(const std::string& argStr)
     return args;
 }
 
-void MasteringUtility::ParseINI(const std::string& albumINI, Albums& albums)
+void MasteringUtility::ParseINI(const std::filesystem::path& albumINI, Albums& albums)
 {
     try
     {
@@ -149,7 +149,7 @@ void MasteringUtility::ParseINI(const std::string& albumINI, Albums& albums)
     catch (...) { std::cerr << "[ParseINI] Unknown exception" << std::endl; }
 }
 
-void MasteringUtility::SaveINI(const Albums& albums, const std::string& iniFile) {
+void MasteringUtility::SaveINI(const Albums& albums, const std::filesystem::path& iniFile) {
     try {
         std::ofstream file(iniFile);
         if (!file.is_open()) {
@@ -199,7 +199,7 @@ void MasteringUtility::SaveINI(const Albums& albums, const std::string& iniFile)
     }
 }
 
-void MasteringUtility::ProcessAlbum(const Album& album, const std::string& iniFolder)
+void MasteringUtility::ProcessAlbum(const Album& album)
 {
     try
     {
@@ -209,19 +209,9 @@ void MasteringUtility::ProcessAlbum(const Album& album, const std::string& iniFo
         if (!album.NewPath.empty())
             std::filesystem::create_directories(album.NewPath);
 
-        std::string workingDir = album.Path.empty()
-            ? iniFolder
-            : album.Path;
-
         for (const auto& song : album.SongsList)
         {
-            Song tempSong = song;
-            if (!album.NewPath.empty() && album.NewPath.back() != '/' && album.NewPath.back() != '\\')
-                tempSong.NewPath = album.NewPath + "/" + song.NewPath;
-            else
-                tempSong.NewPath = album.NewPath + song.NewPath;
-
-            ProcessSong(tempSong, workingDir);
+            ProcessSong(song, album.NewPath);
         }
     }
     catch (const std::exception& ex) { std::cerr << "[ProcessAlbum] Exception: " << ex.what() << std::endl; }
@@ -229,16 +219,18 @@ void MasteringUtility::ProcessAlbum(const Album& album, const std::string& iniFo
 }
 
 
-void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolder)
+void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path& newFolder)
 {
     try
     {
         std::cout << "Encoding: " << song.Title
             << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
+		std::filesystem::path new_songPath = newFolder / song.NewPath;
+
         std::ostringstream cmd;
         cmd << "ffmpeg -y "
-            << "-i \"" << song.Path << "\" "
+            << "-i \"" << new_songPath << "\" "
             << "-c:a " << song.Codec << " ";
 
         if (!song.Title.empty())     cmd << "-metadata title=\"" << song.Title << "\" ";
@@ -258,9 +250,6 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
 
         std::string command = cmd.str();
 
-        auto oldCwd = std::filesystem::current_path();
-        std::filesystem::current_path(iniFolder);
-
         int result = -1;
         for (int attempt = 1; attempt <= 3; ++attempt)
         {
@@ -270,8 +259,6 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
             else { std::cerr << "  ffmpeg failed with code: " << result << std::endl; if (attempt < 3) std::cerr << "  Retrying...\n"; }
         }
 
-        std::filesystem::current_path(oldCwd);
-
         if (result != 0)
             std::cerr << "  Giving up on " << song.Title << " after 3 failed attempts\n";
     }
@@ -279,18 +266,15 @@ void MasteringUtility::ProcessSong(const Song& song, const std::string& iniFolde
     catch (...) { std::cerr << "[ProcessSong] Unknown exception" << std::endl; }
 }
 
-void MasteringUtility::Master(const std::string& albumINI)
+void MasteringUtility::Master(const std::filesystem::path& albumINI)
 {
     try
     {
-        std::filesystem::path iniPath(albumINI);
-        std::string iniFolder = iniPath.parent_path().string();
-
         Albums albums;
         ParseINI(albumINI, albums);
 
         for (const auto& album : albums)
-            ProcessAlbum(album, iniFolder);
+            ProcessAlbum(album);
     }
     catch (const std::exception& ex) { std::cerr << "[Master] Exception: " << ex.what() << std::endl; }
     catch (...) { std::cerr << "[Master] Unknown exception" << std::endl; }
