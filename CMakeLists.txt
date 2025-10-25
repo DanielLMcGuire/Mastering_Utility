@@ -97,6 +97,7 @@ if(WIN32)
 endif()
 configure_file("src/launcher/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/launcher.rc" @ONLY)
 configure_file("src/wizard/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/wizard.rc" @ONLY)
+configure_file("src/tests/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/tests.rc" @ONLY)
 
 # --- Targets -----------------------------------------------------------------
 set(MASTERINGUTIL_SOURCES
@@ -118,3 +119,11 @@ add_executable(masteringutil_wizard
     ${CMAKE_CURRENT_BINARY_DIR}/wizard.rc
 )
 set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizard)
+
+add_executable(masteringutil_tests
+    ${MASTERINGUTIL_SOURCES}
+    src/tests/main.cpp
+    src/argumentParser.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/tests.rc
+)
+set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)
