@@ -4,6 +4,7 @@
 #include <utility>
 #include <iostream>
 #include <cstring>
+#include <charconv>
 
 void ArgParser::registerArg(std::string longName, ArgType type, char shortName)
 {
@@ -113,8 +114,6 @@ std::string ArgParser::f_string(const std::string& longName, const std::string& 
     }
     return defaultVal;
 }
-
-#include <charconv>
 
 int ArgParser::f_int(const std::string& longName, int defaultVal) const
 {
