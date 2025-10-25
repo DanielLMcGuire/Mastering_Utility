@@ -3,6 +3,7 @@
 #include <string>
 #include <utility>
 #include <iostream>
+#include <cstring>
 
 void ArgParser::registerArg(std::string longName, ArgType type, char shortName)
 {

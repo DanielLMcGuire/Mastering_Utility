@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <cstring>
 
 /*
  * @brief Argument Parser Class
