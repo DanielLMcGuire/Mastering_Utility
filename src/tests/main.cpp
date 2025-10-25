@@ -45,45 +45,88 @@ int main(int argc, char** argv) {
     MasteringUtility masterer;
 
     MasteringUtility::Albums albums;
-    MasteringUtility::Album album;
-    album.ID = 1;
-    album.Title = "Example Album";
-    album.Artist = "Example Artist";
-    album.Copyright = "Example Copyright";
-    album.AlbumArt = "Example Art.png";
-    album.Path = "./Example Artist/Example Album/";
-    album.NewPath = "./Example Artist/Example Album/Example Output/";
-    album.Genre = "Example Genre";
-    album.Year = "0000";
-    album.Comment = "Example Comment";
+
+    MasteringUtility::Album album1;
+    album1.ID = 1;
+    album1.Title = "Example Album";
+    album1.Artist = "Example Artist";
+    album1.Copyright = "Example Copyright";
+    album1.AlbumArt = "Example Art.png";
+    album1.Path = "./Example Artist/Example Album/";
+    album1.NewPath = "./Example Artist/Example Album/Example Output/";
+    album1.Genre = "Example Genre";
+    album1.Year = "0000";
+    album1.Comment = "Example Comment";
 
     MasteringUtility::Song song1;
     song1.ID = 1;
     song1.Title = "Example Song 1";
-    song1.Artist = album.Artist;
+    song1.Artist = album1.Artist;
     song1.TrackNumber = 1;
     song1.Path = "Example Song.wav";
     song1.NewPath = "Example Song.mp3";
     song1.Codec = "libmp3lame";
-    song1.Genre = album.Genre;
-    song1.Year = album.Year;
-    song1.Comment = album.Comment;
-    album.SongsList.push_back(song1);
+    song1.Genre = album1.Genre;
+    song1.Year = album1.Year;
+    song1.Comment = album1.Comment;
+    album1.SongsList.push_back(song1);
 
     MasteringUtility::Song song2;
     song2.ID = 2;
     song2.Title = "Example Song 2";
-    song2.Artist = album.Artist;
+    song2.Artist = album1.Artist;
     song2.TrackNumber = 2;
     song2.Path = "Example Song 2.wav";
     song2.NewPath = "Example Song 2.mp3";
     song2.Codec = "libmp3lame";
-    song2.Genre = album.Genre;
-    song2.Year = album.Year;
-    song2.Comment = album.Comment;
-    album.SongsList.push_back(song2);
+    song2.Genre = album1.Genre;
+    song2.Year = album1.Year;
+    song2.Comment = album1.Comment;
+    album1.SongsList.push_back(song2);
 
-    albums.push_back(album);
+    albums.push_back(album1);
+
+
+    MasteringUtility::Album album2;
+    album2.ID = 2;
+    album2.Title = "Example Album 2";
+    album2.Artist = "Example Artist";
+    album2.Copyright = "Example Copyright";
+    album2.AlbumArt = "Example Art.png";
+    album2.Path = "./Example Artist/Example Album/";
+    album2.NewPath = "./Example Artist/Example Album/Example Output/";
+    album2.Genre = "Example Genre";
+    album2.Year = "0000";
+    album2.Comment = "Example Comment";
+
+    MasteringUtility::Song a2song1;
+    a2song1.ID = 1;
+    a2song1.Title = "Example Song 1";
+    a2song1.Artist = album2.Artist;
+    a2song1.TrackNumber = 1;
+    a2song1.Path = "Example Song.wav";
+    a2song1.NewPath = "Example Song.mp3";
+    a2song1.Codec = "libmp3lame";
+    a2song1.Genre = album2.Genre;
+    a2song1.Year = album2.Year;
+    a2song1.Comment = album2.Comment;
+    album2.SongsList.push_back(a2song1);
+
+    MasteringUtility::Song a2song2;
+    a2song2.ID = 2;
+    a2song2.Title = "Example Song 2";
+    a2song2.Artist = album2.Artist;
+    a2song2.TrackNumber = 2;
+    a2song2.Path = "Example Song 2.wav";
+    a2song2.NewPath = "Example Song 2.mp3";
+    a2song2.Codec = "libmp3lame";
+    a2song2.Genre = album2.Genre;
+    a2song2.Year = album2.Year;
+    a2song2.Comment = album2.Comment;
+    album1.SongsList.push_back(a2song2);
+
+    albums.push_back(album2);
+
 
     masterer.SaveINI(albums, outFile);
 
@@ -138,11 +181,11 @@ int main(int argc, char** argv) {
     std::filesystem::remove_all(tempDir);
 
     if (allOk) {
-        std::cout << "All metadata matched successfully!\n";
+        std::cout << "PASS: All metadata matched successfully!\n";
         return 0;
     }
     else {
-        std::cerr << "Metadata mismatch detected!\n";
+        std::cerr << "FAIL: Metadata mismatch detected!\n";
         return 1;
     }
 }
