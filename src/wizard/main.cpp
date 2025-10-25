@@ -175,7 +175,7 @@ namespace MasteringWizard
             std::cout << "Mastering Utility Wizard\n"
                       << "Usage: mastering_wizard [--inifile=<path>] [--auto] [--help]\n\n"
                       << "Options:\n"
-                      << "  --inifile, -i   Path to output INI file.\n"
+                      << "  --inifile, -f   Path to output INI file.\n"
                       << "  --auto, -a      Run in automatic mode with default settings.\n"
                       << "  --help, -h      Display this help message.\n";
             ret = false;
@@ -188,6 +188,20 @@ namespace MasteringWizard
         if (!inifile.empty()) {
             iniPath = inifile;
             ret = true;
+        } 
+        else 
+        {
+            if (argc > 1 && std::filesystem::exists(argv[1]))
+            {    
+                iniPath = argv[1];
+                ret = true;
+            }
+            else
+            { 
+                iniPath = "new.ini";
+                std::cout << "Using default: " << iniPath << '\n';
+                ret = true;
+            }        
         }
         delete parser;
         return ret;
@@ -334,7 +348,7 @@ namespace MasteringWizard
 /// @brief CRT Entry Point
 int main(int argc, char** argv)
 {
-    std::cout << "Daniel's Mastering Utility -- Wizard\n";
+    std::cout << "Daniel's Mastering Utility -- Wizard\n\n";
     
     MasteringUtility masterer;
     MasteringUtility::Albums albums;
