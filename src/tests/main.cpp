@@ -6,32 +6,46 @@
 #include <chrono>
 #include "../MasteringUtil.h"
 
-std::string generateRandomString(int length) {
-    const std::string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_int_distribution<> distribution(0, characters.size() - 1);
+/// @brief MasteringTests namespace
+namespace MasteringTests {
+    /* 
+     * @brief Generates a random string
+     * @param length Length of string
+     * @return Random string
+     */ 
+    std::string generateRandomString(int length) {
+        const std::string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        std::random_device rd;
+        std::mt19937 generator(rd());
+        std::uniform_int_distribution<> distribution(0, characters.size() - 1);
 
-    std::string randomString;
-    for (int i = 0; i < length; ++i) {
-        randomString += characters[distribution(generator)];
+        std::string randomString;
+        for (int i = 0; i < length; ++i) {
+            randomString += characters[distribution(generator)];
+        }
+        return randomString;
     }
-    return randomString;
-}
 
-bool compareStrings(const std::string& a, const std::string& b, const std::string& fieldName) {
-    if (a != b) {
-        std::cerr << "FAIL: Mismatch in " << fieldName << ": '" << a << "' != '" << b << "'\n";
-        return false;
+    /*
+     * @brief Compares two strings
+     * @param a First string
+     * @param b Second string
+     */
+    bool compareStrings(const std::string& a, const std::string& b, const std::string& fieldName) {
+        if (a != b) {
+            std::cerr << "FAIL: Mismatch in " << fieldName << ": '" << a << "' != '" << b << "'\n";
+            return false;
+        }
+        std::cout << "PASS: " << fieldName << " OK: " << a << "\n";
+        return true;
     }
-    std::cout << "PASS: " << fieldName << " OK: " << a << "\n";
-    return true;
-}
+} // namespace MasteringTests
 
+/// @brief CRT Entry Point
 int main(int argc, char** argv) {
     auto start = std::chrono::high_resolution_clock::now(); // start timer
     std::filesystem::path outFile =
-        std::filesystem::temp_directory_path() / ("tempdir_" + generateRandomString(8)) / "test.ini";
+        std::filesystem::temp_directory_path() / ("tempdir_" + MasteringTests::generateRandomString(8)) / "test.ini";
 
     std::filesystem::path tempDir = outFile.parent_path();
 
@@ -145,16 +159,16 @@ int main(int argc, char** argv) {
         const auto& orig = albums[i];
         const auto& parsed = inputAlbums[i];
 
-        allOk &= compareStrings(std::to_string(orig.ID), std::to_string(parsed.ID), "Album ID");
-        allOk &= compareStrings(orig.Title, parsed.Title, "Album Title");
-        allOk &= compareStrings(orig.Artist, parsed.Artist, "Album Artist");
-        allOk &= compareStrings(orig.Copyright, parsed.Copyright, "Album Copyright");
-        allOk &= compareStrings(orig.AlbumArt, parsed.AlbumArt, "Album Art");
-        allOk &= compareStrings(orig.Path.string(), parsed.Path.string(), "Album Path");
-        allOk &= compareStrings(orig.NewPath.string(), parsed.NewPath.string(), "Album NewPath");
-        allOk &= compareStrings(orig.Genre, parsed.Genre, "Album Genre");
-        allOk &= compareStrings(orig.Year, parsed.Year, "Album Year");
-        allOk &= compareStrings(orig.Comment, parsed.Comment, "Album Comment");
+        allOk &= MasteringTests::compareStrings(std::to_string(orig.ID), std::to_string(parsed.ID), "Album ID");
+        allOk &= MasteringTests::compareStrings(orig.Title, parsed.Title, "Album Title");
+        allOk &= MasteringTests::compareStrings(orig.Artist, parsed.Artist, "Album Artist");
+        allOk &= MasteringTests::compareStrings(orig.Copyright, parsed.Copyright, "Album Copyright");
+        allOk &= MasteringTests::compareStrings(orig.AlbumArt, parsed.AlbumArt, "Album Art");
+        allOk &= MasteringTests::compareStrings(orig.Path.string(), parsed.Path.string(), "Album Path");
+        allOk &= MasteringTests::compareStrings(orig.NewPath.string(), parsed.NewPath.string(), "Album NewPath");
+        allOk &= MasteringTests::compareStrings(orig.Genre, parsed.Genre, "Album Genre");
+        allOk &= MasteringTests::compareStrings(orig.Year, parsed.Year, "Album Year");
+        allOk &= MasteringTests::compareStrings(orig.Comment, parsed.Comment, "Album Comment");
 
         if (orig.SongsList.size() != parsed.SongsList.size()) {
             std::cerr << "Song count mismatch in album " << orig.Title << "!\n";
@@ -165,16 +179,16 @@ int main(int argc, char** argv) {
             const auto& oSong = orig.SongsList[j];
             const auto& pSong = parsed.SongsList[j];
 
-            allOk &= compareStrings(std::to_string(oSong.ID), std::to_string(pSong.ID), "Song ID");
-            allOk &= compareStrings(oSong.Title, pSong.Title, "Song Title");
-            allOk &= compareStrings(oSong.Artist, pSong.Artist, "Song Artist");
-            allOk &= compareStrings(std::to_string(oSong.TrackNumber), std::to_string(pSong.TrackNumber), "Song TrackNumber");
-            allOk &= compareStrings(oSong.Path.string(), pSong.Path.string(), "Song Path");
-            allOk &= compareStrings(oSong.NewPath.string(), pSong.NewPath.string(), "Song NewPath");
-            allOk &= compareStrings(oSong.Codec, pSong.Codec, "Song Codec");
-            allOk &= compareStrings(oSong.Genre, pSong.Genre, "Song Genre");
-            allOk &= compareStrings(oSong.Year, pSong.Year, "Song Year");
-            allOk &= compareStrings(oSong.Comment, pSong.Comment, "Song Comment");
+            allOk &= MasteringTests::compareStrings(std::to_string(oSong.ID), std::to_string(pSong.ID), "Song ID");
+            allOk &= MasteringTests::compareStrings(oSong.Title, pSong.Title, "Song Title");
+            allOk &= MasteringTests::compareStrings(oSong.Artist, pSong.Artist, "Song Artist");
+            allOk &= MasteringTests::compareStrings(std::to_string(oSong.TrackNumber), std::to_string(pSong.TrackNumber), "Song TrackNumber");
+            allOk &= MasteringTests::compareStrings(oSong.Path.string(), pSong.Path.string(), "Song Path");
+            allOk &= MasteringTests::compareStrings(oSong.NewPath.string(), pSong.NewPath.string(), "Song NewPath");
+            allOk &= MasteringTests::compareStrings(oSong.Codec, pSong.Codec, "Song Codec");
+            allOk &= MasteringTests::compareStrings(oSong.Genre, pSong.Genre, "Song Genre");
+            allOk &= MasteringTests::compareStrings(oSong.Year, pSong.Year, "Song Year");
+            allOk &= MasteringTests::compareStrings(oSong.Comment, pSong.Comment, "Song Comment");
         }
     }
     auto end = std::chrono::high_resolution_clock::now(); // end timer
