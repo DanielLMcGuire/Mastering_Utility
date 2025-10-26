@@ -123,7 +123,6 @@ set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizar
 add_executable(masteringutil_tests
     ${MASTERINGUTIL_SOURCES}
     src/tests/main.cpp
-    src/argumentParser.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/tests.rc
 )
 set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)

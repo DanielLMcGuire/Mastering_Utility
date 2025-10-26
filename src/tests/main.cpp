@@ -3,8 +3,8 @@
 #include <random>
 #include <filesystem>
 #include <fstream>
+#include <chrono>
 #include "../MasteringUtil.h"
-#include "../argumentParser.h"
 
 std::string generateRandomString(int length) {
     const std::string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -21,14 +21,15 @@ std::string generateRandomString(int length) {
 
 bool compareStrings(const std::string& a, const std::string& b, const std::string& fieldName) {
     if (a != b) {
-        std::cerr << "Mismatch in " << fieldName << ": '" << a << "' != '" << b << "'\n";
+        std::cerr << "FAIL: Mismatch in " << fieldName << ": '" << a << "' != '" << b << "'\n";
         return false;
     }
-    std::cout << fieldName << " OK: " << a << "\n";
+    std::cout << "PASS: " << fieldName << " OK: " << a << "\n";
     return true;
 }
 
 int main(int argc, char** argv) {
+    auto start = std::chrono::high_resolution_clock::now(); // start timer
     std::filesystem::path outFile =
         std::filesystem::temp_directory_path() / ("tempdir_" + generateRandomString(8)) / "test.ini";
 
@@ -123,7 +124,7 @@ int main(int argc, char** argv) {
     a2song2.Genre = album2.Genre;
     a2song2.Year = album2.Year;
     a2song2.Comment = album2.Comment;
-    album1.SongsList.push_back(a2song2);
+    album2.SongsList.push_back(a2song2);
 
     albums.push_back(album2);
 
@@ -176,12 +177,13 @@ int main(int argc, char** argv) {
             allOk &= compareStrings(oSong.Comment, pSong.Comment, "Song Comment");
         }
     }
-
+    auto end = std::chrono::high_resolution_clock::now(); // end timer
     
     std::filesystem::remove_all(tempDir);
 
     if (allOk) {
-        std::cout << "PASS: All metadata matched successfully!\n";
+        std::chrono::duration<double> elapsed = end - start;
+        std::cout << "PASS: All metadata matched successfully in " << elapsed.count() << " seconds.\n";
         return 0;
     }
     else {
