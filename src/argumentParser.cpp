@@ -153,7 +153,7 @@ char ArgParser::f_char(const std::string& longName, char defaultVal) const
  *
  * @param str The string to process
  */
-static stripQuotes(std::string& str)
+static void stripQuotes(std::string& str)
 {
     if (str.size() >= 2 && str.front() == '"' && str.back() == '"')
     {
