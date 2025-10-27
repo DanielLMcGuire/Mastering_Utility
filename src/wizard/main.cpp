@@ -1,12 +1,17 @@
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <limits>
-#include <cstdlib>
-#include <vector>
-#include <filesystem>
-#include "../MasteringUtil.h"
+/**
+ * @file main.cpp
+ * @brief Mastering Utility Wizard
+ * @author Daniel McGuire
+ */
 #include "../argumentParser.h"
+#include "../MasteringUtil.h"
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <vector>
 
 bool g_AutoAddSongs = false;
 

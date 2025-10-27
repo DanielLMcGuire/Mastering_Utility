@@ -1,14 +1,20 @@
-#include <iostream>
-#include <string>
-#include <random>
+/**
+ * @file main.cpp
+ * @brief Mastering Utility Tests
+ * @author Daniel McGuire
+ */
+#include "../MasteringUtil.h"
+#include <chrono>
 #include <filesystem>
 #include <fstream>
-#include <chrono>
-#include "../MasteringUtil.h"
+#include <iostream>
+#include <random>
+#include <string>
 
-/// @brief MasteringTests namespace
+/// @brief Mastering Tests namespace
 namespace MasteringTests {
-    /* 
+
+    /**
      * @brief Generates a random string
      * @param length Length of string
      * @return Random string
@@ -26,7 +32,7 @@ namespace MasteringTests {
         return randomString;
     }
 
-    /*
+    /**
      * @brief Compares two strings
      * @param a First string
      * @param b Second string

@@ -5,6 +5,7 @@
  * The MasteringUtility_dll library provides functionality to parse album metadata from an INI file,
  * and use them to process audio. In addition, it provides functions to save updated metadata back to an INI file.
  *
+ * @author Daniel McGuire
  * Example INI metadata format:
  * @code
  * album 1 ( "Album Name", "Artist", "Copyright", "cover.jpg", "./", "./new", "Genre", "2025", "Comment" )
@@ -15,9 +16,9 @@
  */
 
 #pragma once
+#include <filesystem>
 #include <string>
 #include <vector>
-#include <filesystem>
 
  /// @brief  Mastering Utility
 class MasteringUtility
@@ -104,39 +105,48 @@ public:
     using Albums = std::vector<Album>;
 
     /**
-     *  @brief Masterer
-     *  @param albumINI Path to ini file
-     */
-    void Master(const std::filesystem::path& albumINI);
-
-    /**
-     * @brief INI Parser
+     * @brief Masterer
      *
-     * @param albumINI Path to ini file
-     * @param albums Empty vector of Albums to be returned
+     * Parses an INI File, then processes songs using FFMPEG
+     * @param iniFile File to parse
      */
-    void ParseINI(const std::filesystem::path& albumINI, Albums& albums);
+    void Master(const std::filesystem::path& iniFile);
 
     /**
-     * @brief Save albums to an INI-like file
+     * @brief Parse an INI File
+     *
+     * Formats string of arguments into a vector
+     *
+     * @param[in] iniFile Path to ini file
+     * @param[out] albums Vector of albums
+     */
+    void ParseINI(const std::filesystem::path& iniFile, Albums& albums);
+
+    /**
+     * @brief Parse an INI File
+     *
+     * Formats string of arguments into a vector
+     *
+     * @param iniFile Path to iniFile to save
      * @param albums Vector of albums to save
-     * @param iniFile Path to output INI file
      */
     void SaveINI(const Albums& albums, const std::filesystem::path& iniFile);
 
+
     /**
-     * @brief Processes albums
+     * @brief Process an album
      *
-     * @param album Album
-     * @param newFolder Path to new folder
+     * Processes an album using ProcessSong()
+     * @param album Album to process
      */
     void ProcessAlbum(const Album& album);
 
     /**
-     * @brief Processes songs
+     * @brief Process a song
      *
-     * @param song Song
-     * @param newFolder Path to new folder
+     * Processes a song using FFMPEG
+     * @param song Song to process
+     * @param destFolder album.NewPath of Songs parent album
      */
-    void ProcessSong(const Song& song, const std::filesystem::path& newFolder);
+    void ProcessSong(const Song& song, const std::filesystem::path& destFolder);
 };

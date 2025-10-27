@@ -1,10 +1,15 @@
+/**
+ * @file argumentParser.cpp
+ * @brief Implementation of the Argument Parser
+ * @author Daniel McGuire
+ */
 #include "argumentParser.h"
-#include <unordered_map>
-#include <string>
-#include <utility>
-#include <iostream>
-#include <cstring>
 #include <charconv>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 void ArgParser::registerArg(std::string longName, ArgType type, char shortName)
 {
@@ -143,8 +148,12 @@ char ArgParser::f_char(const std::string& longName, char defaultVal) const
     return defaultVal;
 }
 
-// PRIVATE:
-void ArgParser::stripQuotes(std::string& str)
+/**
+ * @brief Helper function to strip surrounding quotes from a string
+ *
+ * @param str The string to process
+ */
+static stripQuotes(std::string& str)
 {
     if (str.size() >= 2 && str.front() == '"' && str.back() == '"')
     {

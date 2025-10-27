@@ -1,8 +1,13 @@
+/**
+ * @file main.cpp
+ * @brief Mastering Utility Launcher
+ * @author Daniel McGuire
+ */
+#include "../argumentParser.h"
+#include "../MasteringUtil.h"
+#include <filesystem>
 #include <iostream>
 #include <string>
-#include <filesystem>
-#include "../MasteringUtil.h"
-#include "../argumentParser.h"
 
 /// @brief CRT Entry Point
 int main( int argc, char* argv[] )

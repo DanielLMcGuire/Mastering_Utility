@@ -1,34 +1,58 @@
+/**
+ * @file MasteringUtil.cpp
+ * @brief Implementation of the Mastering Utility
+ * @author Daniel McGuire
+ */ 
 #include "MasteringUtil.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <stdexcept>
 #include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
 
-// --- helper funcs ---
-static std::string trim(const std::string& s)
+/**
+  * @brief Trim whitespace from string
+  * @param input String to trim
+  * @return Trimmed string
+  */
+static std::string trim(const std::string& input)
 {
-    auto start = s.find_first_not_of(" \t\r\n");
-    auto end = s.find_last_not_of(" \t\r\n");
-    return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
+    auto start = input.find_first_not_of(" \t\r\n");
+    auto end = input.find_last_not_of(" \t\r\n");
+    return (start == std::string::npos) ? "" : input.substr(start, end - start + 1);
 }
 
-static std::string cleanString(const std::string& s)
+/**
+  * @brief Clean a string
+  * 
+  * Trims whitespace and removes quotes from strings.   
+  * 
+  * @param input String to clean
+  * @return Cleaned string
+  */
+static std::string cleanString(const std::string& input)
 {
-    std::string out = trim(s);
+    std::string out = trim(input);
     if (!out.empty() && out.front() == '"') out.erase(out.begin());
     if (!out.empty() && out.back() == '"') out.pop_back();
     return out;
 }
 
-static std::vector<std::string> splitArgs(const std::string& argStr)
+/**
+  * @brief Split arguments
+  *
+  * Tranforms string of arguments wrapped in quotes '"' into a vector
+  *
+  * @param input String containing arguments
+  * @return Vector containing arguments
+  */
+static std::vector<std::string> splitArgs(const std::string& input)
 {
     std::vector<std::string> args;
     std::string current;
     bool inQuotes = false;
 
-    for (char c : argStr)
+    for (char c : input)
     {
         if (c == '"')
         {
@@ -50,15 +74,14 @@ static std::vector<std::string> splitArgs(const std::string& argStr)
     return args;
 }
 
-
-void MasteringUtility::ParseINI(const std::filesystem::path& albumINI, Albums& albums)
+void MasteringUtility::ParseINI(const std::filesystem::path& iniFile, Albums& albums)
 {
     try
     {
-        std::ifstream file(albumINI);
+        std::ifstream file(iniFile);
         if (!file.is_open())
         {
-            std::cerr << "[ParseINI] Could not open INI file: " << albumINI << std::endl;
+            std::cerr << "[ParseINI] Could not open INI file: " << iniFile << std::endl;
             return;
         }
 
@@ -220,19 +243,18 @@ void MasteringUtility::ProcessAlbum(const Album& album)
     catch (...) { std::cerr << "[ProcessAlbum] Unknown exception" << std::endl; }
 }
 
-
-void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path& newFolder)
+void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path& destFolder)
 {
     try
     {
         std::cout << "Encoding: " << song.Title
             << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
-        std::filesystem::path new_songPath = newFolder / song.NewPath;
+        std::filesystem::path new_songPath = destFolder / song.NewPath;
 
         std::ostringstream cmd;
         cmd << "ffmpeg -y "
-            << "-i \"" << song.Path << "\" "  // ✅ Use song.Path as INPUT
+            << "-i \"" << song.Path << "\" "  
             << "-c:a " << song.Codec << " ";
 
         if (!song.Title.empty())     cmd << "-metadata title=\"" << song.Title << "\" ";
@@ -248,7 +270,7 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
 
         cmd << "-metadata track=\"" << song.TrackNumber << "\" ";
 
-        cmd << "\"" << new_songPath.string() << "\"";  // ✅ Use new_songPath as OUTPUT
+        cmd << "\"" << new_songPath.string() << "\"";  
 
         std::string command = cmd.str();
 
@@ -268,12 +290,12 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
     catch (...) { std::cerr << "[ProcessSong] Unknown exception" << std::endl; }
 }
 
-void MasteringUtility::Master(const std::filesystem::path& albumINI)
+void MasteringUtility::Master(const std::filesystem::path& iniFile)
 {
     try
     {
         Albums albums;
-        ParseINI(albumINI, albums);
+        ParseINI(iniFile, albums);
 
         for (const auto& album : albums)
             ProcessAlbum(album);
