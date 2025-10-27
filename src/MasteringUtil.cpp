@@ -9,6 +9,68 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_set>
+#include <array>
+
+
+/**
+ * @brief Get Audio Codecs
+ * Requests audio codecs from FFMPEG
+ * @return set of audio codecs 
+ */
+static std::unordered_set<std::string> getAudioCodecs() {
+    std::unordered_set<std::string> audioCodecs;
+
+    const char* cmd = "ffmpeg -codecs";
+
+#ifdef _WIN32
+    FILE* pipe = _popen(cmd, "r");
+#else
+    FILE* pipe = popen(cmd, "r");
+#endif
+    if (!pipe) {
+        std::cerr << "Failed to run ffmpeg command\n";
+        return audioCodecs;
+    }
+
+    std::array<char, 512> buffer;
+    bool parsing = false;
+
+    while (fgets(buffer.data(), buffer.size(), pipe)) {
+        std::string line(buffer.data());
+
+        if (!parsing) {
+            if (line.find("Codecs:") != std::string::npos) parsing = true;
+            continue;
+        }
+
+        if (line.find("-------") != std::string::npos) continue;
+
+        size_t firstChar = line.find_first_not_of(" \t");
+        if (firstChar == std::string::npos) continue;
+        line = line.substr(firstChar);
+
+        if (line.size() < 7) continue;
+
+        std::string flags = line.substr(0, 6);
+        if (flags.size() >= 3 && flags[0] == 'D' && flags[1] == 'E' && flags[2] == 'A') {
+            size_t nameStart = line.find_first_not_of(" \t", 6);
+            if (nameStart == std::string::npos) continue;
+            size_t nameEnd = line.find_first_of(" \t", nameStart);
+            std::string codecName = line.substr(nameStart, nameEnd - nameStart);
+
+            audioCodecs.insert(codecName); // <-- insert for unordered_set
+        }
+    }
+
+#ifdef _WIN32
+    _pclose(pipe);
+#else
+    pclose(pipe);
+#endif
+
+    return audioCodecs;
+}
 
 /**
   * @brief Trim whitespace from string
@@ -247,6 +309,9 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
 {
     try
     {
+        std::unordered_set<std::string> audioCodecs = getAudioCodecs();
+        if (!audioCodecs.contains(trim(song.Codec))) throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
+        if (!std::filesystem::exists(song.Path)) throw std::runtime_error("File not found: " + song.Path.string());
         std::cout << "Encoding: " << song.Title
             << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
