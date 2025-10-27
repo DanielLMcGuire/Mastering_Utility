@@ -11,6 +11,19 @@
 #include <unordered_map>
 #include <utility>
 
+/**
+ * @brief Helper function to strip surrounding quotes from a string
+ *
+ * @param str The string to process
+ */
+static void stripQuotes(std::string& str)
+{
+    if (str.size() >= 2 && str.front() == '"' && str.back() == '"')
+    {
+        str = str.substr(1, str.size() - 2);
+    }
+}
+
 void ArgParser::registerArg(std::string longName, ArgType type, char shortName)
 {
     RegisteredArg arg{ std::move(longName), shortName, type, false, "" };
@@ -146,17 +159,4 @@ char ArgParser::f_char(const std::string& longName, char defaultVal) const
         }
     }
     return defaultVal;
-}
-
-/**
- * @brief Helper function to strip surrounding quotes from a string
- *
- * @param str The string to process
- */
-static void stripQuotes(std::string& str)
-{
-    if (str.size() >= 2 && str.front() == '"' && str.back() == '"')
-    {
-        str = str.substr(1, str.size() - 2);
-    }
 }
