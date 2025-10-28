@@ -22,8 +22,6 @@ Includes a C++ tagging API (Apache 2.0) and an Argument Parser library (MIT).
 - **macOS**: Artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
 - **Build from source**: See below
 
-<sub>Beta note: Windows prebuilts use the latest Insider release of MSVC. Action artifacts don’t.</sub>
-
 ## Prerequisites
 
 - **ffmpeg** in your system PATH (`ffmpeg -version`) – [Download here](https://ffmpeg.org/download.html)  
