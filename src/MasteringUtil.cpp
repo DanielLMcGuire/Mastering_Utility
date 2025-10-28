@@ -381,10 +381,10 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
             while (fgets(buffer, sizeof(buffer), pipe))
                 output += buffer;
 #ifdef _WIN32
-			int result = _pclose(pipe); 
+			result = _pclose(pipe); 
 #else
 			int status = pclose(pipe);   
-			int result = WIFEXITED(status) ? WEXITSTATUS(status) : -1; 
+			result = WIFEXITED(status) ? WEXITSTATUS(status) : -1; 
 #endif
 
 		    if (result == 0) { std::cout << "  Success!" << std::endl; break; }
