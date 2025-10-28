@@ -21,6 +21,7 @@
 static std::unordered_set<std::string> getAudioCodecs() {
 	std::unordered_set<std::string> audioCodecs;
 
+	audioCodecs.insert("copy");
 	const char* cmd = "ffmpeg -codecs";
 
 #ifdef _WIN32
@@ -59,7 +60,7 @@ static std::unordered_set<std::string> getAudioCodecs() {
 			size_t nameEnd = line.find_first_of(" \t", nameStart);
 			std::string codecName = line.substr(nameStart, nameEnd - nameStart);
 
-			audioCodecs.insert(codecName); // <-- insert for unordered_set
+			audioCodecs.insert(codecName); 
 		}
 	}
 
@@ -331,7 +332,7 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
 		if (!song.Copyright.empty()) cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
 
 		if (song.Codec == "flac")        cmd << "-compression_level 12 ";
-		if (song.Codec == "libmp3lame")  cmd << "-qscale:a 3 ";
+		if (song.Codec == "mp3")  cmd << "-qscale:a 3 ";
 
 		cmd << "-metadata track=\"" << song.TrackNumber << "\" ";
 

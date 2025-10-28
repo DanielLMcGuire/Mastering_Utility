@@ -110,11 +110,13 @@ song <ID> ("Title", "Artist", TrackNumber, "SourceFile", "OutputFile", "Codec", 
 
 **Supported codecs:** Any ffmpeg audio codec:
 
-* `libmp3lame` – MP3 (VBR quality 3 default)
+* `mp3` – MP3 (VBR quality 3 default)
 * `flac` – FLAC lossless (compression 12 default)
 * `aac` – AAC
 * `libopus` – Opus
 * `copy` – Copy stream without re-encoding
+
+Run ```ffmpeg --codecs``` to see more
 
 ## Example Workflow
 
