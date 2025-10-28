@@ -49,7 +49,7 @@ namespace MasteringWizard
          /** @brief Display a summary of a SONG
           * @param song Song to summarize
           */
-        void pre_song(const MasteringUtility::Song& song, bool displayInfo = true)
+        void song(const MasteringUtility::Song& song, bool displayInfo = true)
         {
             if (displayInfo) std::cout << "\n=== Song Summary ===\n";
             std::cout << "Title: " << song.Title << " | Artist: " << song.Artist << " | Album: " << song.Album << " | Track: " << song.TrackNumber << "\n";
@@ -58,14 +58,14 @@ namespace MasteringWizard
         /** @brief Display a summary of an ALBUM
          * @param album Album to summarize
 		 */
-        void pre_album(const MasteringUtility::Album& album)
+        void album(const MasteringUtility::Album& album)
         {
             std::cout << "\n=== Album Summary ===\n";
             std::cout << "Album: " << album.Title << " | Artist: " << album.Artist << " | Genre: " << album.Genre
                       << " | Year: " << album.Year << " | Songs: " << album.SongsList.size() << "\n";
             for (const auto& song : album.SongsList)
             {
-                pre_song(song, false);
+                preview::song(song, false);
             }
             std::cout << "-------------------------\n";
         }
@@ -162,7 +162,7 @@ namespace MasteringWizard
      * @param[out] iniPath The resulting filesystem path for the INI output file.
      * @return true if execution should continue, or false if the program should exit immediately.
      */
-    bool handle_command_line(int argc, char** argv, std::filesystem::path& iniPath) 
+    bool handleCommandLine(int argc, char** argv, std::filesystem::path& iniPath) 
     {
         //HELP,AUTO,INIFILE
         
@@ -224,7 +224,7 @@ namespace MasteringWizard
      * @param[out] albums Container that will receive the completed album structures.
      * @throws std::runtime_error on invalid input or unexpected user responses.
      */
-    void collect_albums_interactively(MasteringUtility::Albums& albums) 
+    void collectAlbumsInteractively(MasteringUtility::Albums& albums) 
     {
         int albumCount = 1;
         MasteringWizard::prompt("Enter number of albums to create", albumCount, "Must be a positive integer.", &albumCount);
@@ -269,7 +269,7 @@ namespace MasteringWizard
                 MasteringWizard::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
                 MasteringWizard::prompt("Enter Song Codec (libmp3lame, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
                 
-                MasteringWizard::preview::pre_song(song);
+                MasteringWizard::preview::song(song);
                 bool addSong = g_AutoAddSongs;
                 if (!addSong) {
 					char response = '\0';
@@ -297,7 +297,7 @@ namespace MasteringWizard
                 }
             }
         
-            MasteringWizard::preview::pre_album(album);
+            MasteringWizard::preview::album(album);
             char addAlbumResponse = 'Y';
             MasteringWizard::prompt("Would you like to add this album to the list? (y/n)", addAlbumResponse, "Please enter 'y' or 'n'.", &addAlbumResponse);
             if (addAlbumResponse == 'y' || addAlbumResponse == 'Y')
@@ -317,7 +317,7 @@ namespace MasteringWizard
      * @param iniPath Path of the file being saved, used for display in messages.
      * @return true if the user confirmed saving, false otherwise.
      */
-    bool confirm_save_interactively(const std::filesystem::path& iniPath) 
+    bool confirmSaveInteractively(const std::filesystem::path& iniPath) 
     {
          char saveResponse = 'Y';
         std::string promptMsg = "Would you like to save \"" + iniPath.string() + "\"? (y/n)";
@@ -340,7 +340,7 @@ namespace MasteringWizard
      * @param albums Albums to serialize into the INI format.
      * @param iniPath Destination file path, including filename.
      */
-    void save_ini_file(MasteringUtility& masterer,
+    void saveINIFile(MasteringUtility& masterer,
                     const MasteringUtility::Albums& albums,
                     const std::filesystem::path& iniPath) 
     {   
@@ -359,7 +359,7 @@ int main(int argc, char** argv)
     MasteringUtility::Albums albums;
     std::filesystem::path iniPath;
 
-    if (!MasteringWizard::handle_command_line(argc, argv, iniPath))
+    if (!MasteringWizard::handleCommandLine(argc, argv, iniPath))
     {
         cleanup(0);
         return 0;
@@ -367,7 +367,7 @@ int main(int argc, char** argv)
 
     try
     {
-        MasteringWizard::collect_albums_interactively(albums);
+        MasteringWizard::collectAlbumsInteractively(albums);
 
         if (albums.empty())
         {
@@ -375,9 +375,9 @@ int main(int argc, char** argv)
             cleanup(0);
             return 0;
         }
-        if (MasteringWizard::confirm_save_interactively(iniPath))
+        if (MasteringWizard::confirmSaveInteractively(iniPath))
         {
-            MasteringWizard::save_ini_file(masterer, albums, iniPath);
+            MasteringWizard::saveINIFile(masterer, albums, iniPath);
         }
         else
         {
