@@ -18,8 +18,8 @@ Includes a C++ tagging API (Apache 2.0) and an Argument Parser library (MIT).
 
 ## Download
 
-- **Windows / Linux**: 64-bit installers (MSI/EXE) and AppImages on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
-- **macOS**: Artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
+- **Windows**: 64-bit installers (MSI/EXE) on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
+- **macOS / Linux**: Artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions)
 - **Build from source**: See below
 
 ## Prerequisites
