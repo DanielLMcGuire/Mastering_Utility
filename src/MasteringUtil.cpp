@@ -380,14 +380,13 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
             char buffer[256];
             while (fgets(buffer, sizeof(buffer), pipe))
                 output += buffer;
-
 #ifdef _WIN32
-            int pipeResult = _pclose(pipe);
-			int result = _pclose(pipe);
+			int result = _pclose(pipe); 
 #else
-            int pipeResult = pclose(pipe);
-			int result = WEXITSTATUS(pclose(pipe));
+			int status = pclose(pipe);   
+			int result = WIFEXITED(status) ? WEXITSTATUS(status) : -1; 
 #endif
+
 		    if (result == 0) { std::cout << "  Success!" << std::endl; break; }
             else {
                 std::cerr << "  ffmpeg failed with code: " << result << std::endl;
