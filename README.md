@@ -12,7 +12,7 @@ Includes a C++ tagging API (Apache 2.0) and an Argument Parser library (MIT).
 
 ## Features
 
-- Manage multiple albums and tracks via a single INI config file
+- Manage multiple albums and tracks via a single Markup config file
 - Batch re-encode audio files (WAV, FLAC, MP3, etc.) with consistent quality
 - Auto-apply metadata tags (title, artist, album, track number, year, genre, copyright)
 - Keep a structured workflow for mastering projects
@@ -51,11 +51,11 @@ cmake --build build
 
 ### 1. Mastering Wizard (`masteringwizard`)
 
-Interactive INI creator.
+Interactive Markup creator.
 
 ```bash
 # Create new configuration
-./masteringwizard --inifile="output.ini"
+./masteringwizard --Markupfile="output.Markup"
 
 # Show help
 ./masteringwizard --help
@@ -72,10 +72,10 @@ Prompts for:
 
 ### 2. Mastering Utility (`masteringutility`)
 
-Processes the INI file and encodes all tracks.
+Processes the Markup file and encodes all tracks.
 
 ```bash
-./masteringutility --inifile="myalbum.ini"
+./masteringutility --markupfile="myalbum.mas"
 ```
 
 It will:
@@ -86,9 +86,9 @@ It will:
 * Apply all metadata tags
 * Retry failed conversions up to 3 times
 
-## INI File Format
+## Markup File Format
 
-```ini
+```Markup
 album 1 ("Album Title", "Artist Name", "© 2025 Copyright", "cover.jpg", "./source", "./output", "Genre", "2025", "Comment")
 {
     song 1 ("Track Title", "Artist Name", 1, "input.wav", "01-track.mp3", "libmp3lame", "Genre", "2025", "Comment")
@@ -119,11 +119,11 @@ song <ID> ("Title", "Artist", TrackNumber, "SourceFile", "OutputFile", "Codec", 
 ## Example Workflow
 
 ```bash
-./masteringwizard -i="myproject.ini"
-./masteringutility -i="myproject.ini"
+./masteringwizard -f="myproject.Markup"
+./masteringutility -f="myproject.Markup"
 ```
 
-Wizard will prompt for album/song info and generate a ready-to-use INI file.
+Wizard will prompt for album/song info and generate a ready-to-use Markup file.
 
 ## AI Content Disclosure
 
