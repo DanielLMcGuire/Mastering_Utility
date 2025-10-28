@@ -773,3 +773,6 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,kate,cmake,xcode,python,doxygen,eclipse,codeblocks,sublimetext,visualstudio,visualstudiocode
+src/launcher/RCa12000
+src/tests/RCa12000
+src/wizard/RCa12000
