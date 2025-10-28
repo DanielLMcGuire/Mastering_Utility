@@ -26,6 +26,13 @@
 #include <stdexcept>
 #include <unordered_set>
 #include <array>
+#include <cstdio>     
+#include <memory>     
+#include <string>
+
+
+
+
 
 
 /**
@@ -323,52 +330,77 @@ void MasteringUtility::ProcessAlbum(const Album& album)
 
 void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path& destFolder)
 {
-	try
-	{
-		std::unordered_set<std::string> audioCodecs = getAudioCodecs();
-		if (!audioCodecs.contains(trim(song.Codec))) throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
-		if (!std::filesystem::exists(song.Path)) throw std::runtime_error("File not found: " + song.Path.string());
-		std::cout << "Encoding: " << song.Title
-			<< " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
+    try
+    {
+        std::unordered_set<std::string> audioCodecs = getAudioCodecs();
+        if (!audioCodecs.contains(trim(song.Codec))) throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
+        if (!std::filesystem::exists(song.Path)) throw std::runtime_error("File not found: " + song.Path.string());
+        std::cout << "Encoding: " << song.Title
+                  << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
-		std::filesystem::path new_songPath = destFolder / song.NewPath;
+        std::filesystem::path new_songPath = destFolder / song.NewPath;
 
-		std::ostringstream cmd;
-		cmd << "ffmpeg -y "
-			<< "-i \"" << song.Path.string() << "\" "  
-			<< "-c:a " << song.Codec << " ";
+        std::ostringstream cmd;
+        cmd << "ffmpeg -y "
+            << "-i \"" << song.Path.string() << "\" ";  
 
-		if (!song.Title.empty())     cmd << "-metadata title=\"" << song.Title << "\" ";
-		if (!song.Artist.empty())    cmd << "-metadata artist=\"" << song.Artist << "\" ";
-		if (!song.Album.empty())     cmd << "-metadata album=\"" << song.Album << "\" ";
-		if (!song.Genre.empty())     cmd << "-metadata genre=\"" << song.Genre << "\" ";
-		if (!song.Year.empty())      cmd << "-metadata date=\"" << song.Year << "\" ";
-		if (!song.Comment.empty())   cmd << "-metadata comment=\"" << song.Comment << "\" ";
-		if (!song.Copyright.empty()) cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
+        if (!song.Title.empty())     cmd << "-metadata title=\"" << song.Title << "\" ";
+        if (!song.Artist.empty())    cmd << "-metadata artist=\"" << song.Artist << "\" ";
+        if (!song.Album.empty())     cmd << "-metadata album=\"" << song.Album << "\" ";
+        if (!song.Genre.empty())     cmd << "-metadata genre=\"" << song.Genre << "\" ";
+        if (!song.Year.empty())      cmd << "-metadata date=\"" << song.Year << "\" ";
+        if (!song.Comment.empty())   cmd << "-metadata comment=\"" << song.Comment << "\" ";
+        if (!song.Copyright.empty()) cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
 
-		if (song.Codec == "flac")        cmd << "-compression_level 12 ";
-		if (song.Codec == "mp3")  cmd << "-qscale:a 3 ";
+        if (song.Codec == "flac")        cmd << "-compression_level 12 ";
+        if (song.Codec == "mp3")         cmd << "-qscale:a 3 ";
 
-		cmd << "-metadata track=\"" << song.TrackNumber << "\" ";
+        cmd << "-metadata track=\"" << song.TrackNumber << "\" "
+            << "\"" << new_songPath.string() << "\"";
 
-		cmd << "\"" << new_songPath.string() << "\"";  
+        std::string command = cmd.str();
+        int result = -1;
 
-		std::string command = cmd.str();
+        for (int attempt = 1; attempt <= 3; ++attempt)
+        {
+            std::cout << "  Running (attempt " << attempt << "): " << command << std::endl;
 
-		int result = -1;
-		for (int attempt = 1; attempt <= 3; ++attempt)
-		{
-			std::cout << "  Running (attempt " << attempt << "): " << command << std::endl;
-			result = std::system(command.c_str());
-			if (result == 0) { std::cout << "  Success!" << std::endl; break; }
-			else { std::cerr << "  ffmpeg failed with code: " << result << std::endl; if (attempt < 3) std::cerr << "  Retrying...\n"; }
-		}
+#ifdef _WIN32
+            FILE* pipe = _popen(command.c_str(), "r");
+#else
+            FILE* pipe = popen(command.c_str(), "r");
+#endif
+            if (!pipe) { 
+                std::cerr << "  Failed to open pipe for command execution\n"; 
+                result = -1; 
+                continue; 
+            }
 
-		if (result != 0)
-			std::cerr << "  Giving up on " << song.Title << " after 3 failed attempts\n";
-	}
-	catch (const std::exception& ex) { std::cerr << "[ProcessSong] Exception: " << ex.what() << std::endl; }
-	catch (...) { std::cerr << "[ProcessSong] Unknown exception" << std::endl; }
+            std::string output;
+            char buffer[256];
+            while (fgets(buffer, sizeof(buffer), pipe))
+                output += buffer;
+
+#ifdef _WIN32
+            int pipeResult = _pclose(pipe);
+			int result = _pclose(pipe);
+#else
+            int pipeResult = pclose(pipe);
+			int result = WEXITSTATUS(pclose(pipe));
+#endif
+		    if (result == 0) { std::cout << "  Success!" << std::endl; break; }
+            else {
+                std::cerr << "  ffmpeg failed with code: " << result << std::endl;
+                std::cerr << output;  // show captured output only on failure
+                if (attempt < 3) std::cerr << "  Retrying...\n";
+            }
+        }
+
+        if (result != 0)
+            std::cerr << "  Giving up on " << song.Title << " after 3 failed attempts\n";
+    }
+    catch (const std::exception& ex) { std::cerr << "[ProcessSong] Exception: " << ex.what() << std::endl; }
+    catch (...) { std::cerr << "[ProcessSong] Unknown exception" << std::endl; }
 }
 
 void MasteringUtility::Master(const std::filesystem::path& markupFile)
@@ -384,4 +416,3 @@ void MasteringUtility::Master(const std::filesystem::path& markupFile)
 	catch (const std::exception& ex) { std::cerr << "[Master] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[Master] Unknown exception" << std::endl; }
 }
-
