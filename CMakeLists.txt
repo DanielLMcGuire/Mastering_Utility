@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(masteringutil LANGUAGES CXX VERSION 0.9.1)
+project(masteringutil LANGUAGES CXX VERSION 0.9.2)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
