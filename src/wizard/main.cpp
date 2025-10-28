@@ -63,6 +63,7 @@ namespace MasteringWizard
 	namespace preview {
 		 /** @brief Display a summary of a SONG
 		  * @param song Song to summarize
+		  * @param displayInfo Display Special Styling (default = true)
 		  */
 		void song(const MasteringUtility::Song& song, bool displayInfo = true)
 		{
@@ -328,7 +329,7 @@ namespace MasteringWizard
 	 * Presents the user with a yes/no prompt. If the user declines, the caller may
 	 * choose to exit without saving. This function only gathers the user's choice.
 	 *
-	 * @param MarkupPath Path of the file being saved, used for display in messages.
+	 * @param markupPath Path of the file being saved, used for display in messages.
 	 * @return true if the user confirmed saving, false otherwise.
 	 */
 	bool confirmSaveInteractively(const std::filesystem::path& markupPath) 

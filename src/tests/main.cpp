@@ -48,6 +48,7 @@ std::string generateRandomString(int length) {
  * @brief Compares two strings
  * @param a First string
  * @param b Second string
+ * @param fieldName Title for string
  */
 bool compareStrings(const std::string& a, const std::string& b, const std::string& fieldName) {
 	if (a != b) {
