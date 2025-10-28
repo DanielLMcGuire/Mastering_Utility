@@ -6,7 +6,9 @@
 Simplifies audio tagging using a metadata markup format and a Wizard to aid in creating the format.
 Includes a C++ tagging API (Apache 2.0) and an Argument Parser library (MIT).
 
-> ⚠️ API docs are still in progress.
+ 
+> [!IMPORTANT]
+> API docs are still in progress.
 
 ## Features
 
