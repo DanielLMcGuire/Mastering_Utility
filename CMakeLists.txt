@@ -1,26 +1,20 @@
 cmake_minimum_required(VERSION 3.15)
 project(masteringutil LANGUAGES CXX VERSION 0.8.2)
 
-# --- Build Defaults ----------------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Default to RelWithDebInfo if no build type is chosen
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the build type." FORCE)
 endif()
 
-# Recommend Ninja for faster builds
 if(NOT CMAKE_GENERATOR MATCHES "Ninja")
     message(STATUS "Tip: For faster incremental builds, try using -G \"Ninja\"")
 endif()
 
-# --- Git Commit Hash Retrieval ----------------------------------------------
-# Stores a short git commit hash and adds "-mod" if the working directory is dirty
 function(get_git_commit_hash_out out_var)
-    # Short hash of current HEAD
     execute_process(
         COMMAND git rev-parse --short HEAD
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -32,7 +26,6 @@ function(get_git_commit_hash_out out_var)
         set(_git_hash "unknown")
     endif()
 
-    # Detect modified tracked files (ignore untracked)
     execute_process(
         COMMAND git status --porcelain --untracked-files=no
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -52,8 +45,6 @@ endfunction()
 get_git_commit_hash_out(FULL_VERSION_STRING)
 message(STATUS "Mastering Utility ${FULL_VERSION_STRING}")
 
-# --- Optional Build Tools ----------------------------------------------------
-# Use ccache if present (speed up rebuilds)
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
     message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
@@ -61,7 +52,6 @@ if(CCACHE_PROGRAM)
     set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
 endif()
 
-# Optionally use LLD linker for faster linking on Clang/GCC
 option(USE_LLD "Use lld linker if available" ON)
 if(USE_LLD)
     find_program(LLD_EXE lld)
@@ -74,7 +64,6 @@ if(USE_LLD)
     endif()
 endif()
 
-# --- Compiler & Linker Flags -------------------------------------------------
 if(MSVC)
     set(ADDITIONAL_RELEASE_FLAGS "/OX")
     set(ADDITIONAL_LINKER_FLAGS "/LTCG")
@@ -87,13 +76,11 @@ else()
     set(ADDITIONAL_LINKER_DEBUG_FLAGS "")
 endif()
 
-# Apply linker flags for build modes
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE   "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${ADDITIONAL_LINKER_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${ADDITIONAL_LINKER_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG     "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${ADDITIONAL_LINKER_DEBUG_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${ADDITIONAL_LINKER_DEBUG_FLAGS}")
 
-# --- Windows Resource Files --------------------------------------------------
 if(WIN32)
     enable_language(RC)
 endif()
@@ -101,30 +88,37 @@ configure_file("src/launcher/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/launcher
 configure_file("src/wizard/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/wizard.rc" @ONLY)
 configure_file("src/tests/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/tests.rc" @ONLY)
 
-# --- Targets -----------------------------------------------------------------
 set(MASTERINGUTIL_SOURCES
     src/MasteringUtil.cpp
 )
 
+set(ARGUMENTPARSER_SOURCES
+    src/argumentParser.cpp
+)
+
+file(GLOB_RECURSE LAUNCHER_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/launcher/*.cpp")
+file(GLOB_RECURSE WIZARD_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/wizard/*.cpp")
+file(GLOB_RECURSE TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/tests/*.cpp")
+
 add_executable(masteringutil_launcher
     ${MASTERINGUTIL_SOURCES}
-    src/launcher/main.cpp
-    src/argumentParser.cpp
+    ${LAUNCHER_SOURCES}
+    ${ARGUMENTPARSER_SOURCES}
     ${CMAKE_CURRENT_BINARY_DIR}/launcher.rc
 )
 set_target_properties(masteringutil_launcher PROPERTIES OUTPUT_NAME MasteringUtility)
 
 add_executable(masteringutil_wizard
     ${MASTERINGUTIL_SOURCES}
-    src/wizard/main.cpp
-    src/argumentParser.cpp
+    ${ARGUMENTPARSER_SOURCES}
+    ${WIZARD_SOURCES}
     ${CMAKE_CURRENT_BINARY_DIR}/wizard.rc
 )
 set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizard)
 
 add_executable(masteringutil_tests
     ${MASTERINGUTIL_SOURCES}
-    src/tests/main.cpp
+    ${TESTS_SOURCES}
     ${CMAKE_CURRENT_BINARY_DIR}/tests.rc
 )
 set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)
