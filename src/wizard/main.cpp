@@ -28,6 +28,10 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#pragma warning(disable: 4834)
+#endif
+
 bool g_AutoAddSongs = false;
 
 /** @brief Indicate unreachable code
@@ -302,7 +306,7 @@ namespace MasteringWizard
 					case 'n':
 						break;
 					default:
-						std::runtime_error("Unexpected response.");
+						throw std::runtime_error("Unexpected response.");
 						unreachable();
 					}
 				}

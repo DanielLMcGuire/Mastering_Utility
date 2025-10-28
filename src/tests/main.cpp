@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 		std::filesystem::create_directory(tempDir);
 	}
 	if (!std::filesystem::exists(outFile)) {
-		std::ofstream(outFile); 
+		std::ofstream{outFile};
 	}
 
 
