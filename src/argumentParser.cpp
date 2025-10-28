@@ -3,6 +3,11 @@
  * @brief Implementation of the Argument Parser
  * @author Daniel McGuire
  */
+
+// Copyright 2025 Daniel McGuire
+//
+// Licensed under the MIT License
+
 #include "argumentParser.h"
 #include <charconv>
 #include <cstring>

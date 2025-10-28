@@ -8,6 +8,10 @@
 #include <string>
 #include <unordered_map>
 
+// Copyright 2025 Daniel McGuire
+//
+// Licensed under the MIT License
+
 /**
  * @brief Argument Parser Class
  *
