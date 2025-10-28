@@ -41,14 +41,16 @@ function(get_git_commit_hash_out out_var)
         ERROR_QUIET
     )
     if(NOT "${_git_status}" STREQUAL "")
-        set(_git_hash "${_git_hash}-mod")
+        set(_git_hash "@${PROJECT_VERSION}+${_git_hash}+mod")
+    else()
+        set(_git_hash "@${PROJECT_VERSION}+${_git_hash}")
     endif()
 
     set(${out_var} "${_git_hash}" PARENT_SCOPE)
 endfunction()
 
-get_git_commit_hash_out(GIT_COMMIT_HASH)
-message(STATUS "Commit hash: ${GIT_COMMIT_HASH}")
+get_git_commit_hash_out(FULL_VERSION_STRING)
+message(STATUS "Mastering Utility ${FULL_VERSION_STRING}")
 
 # --- Optional Build Tools ----------------------------------------------------
 # Use ccache if present (speed up rebuilds)
@@ -95,9 +97,9 @@ set(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${ADDI
 if(WIN32)
     enable_language(RC)
 endif()
-configure_file("src/launcher/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/launcher.rc" @ONLY)
-configure_file("src/wizard/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/wizard.rc" @ONLY)
-configure_file("src/tests/resources.rc.in" "${CMAKE_CURRENT_BINARY_DIR}/tests.rc" @ONLY)
+configure_file("src/launcher/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/launcher.rc" @ONLY)
+configure_file("src/wizard/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/wizard.rc" @ONLY)
+configure_file("src/tests/resources.rc" "${CMAKE_CURRENT_BINARY_DIR}/tests.rc" @ONLY)
 
 # --- Targets -----------------------------------------------------------------
 set(MASTERINGUTIL_SOURCES

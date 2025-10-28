@@ -19,12 +19,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Daniel McGuire\0"
-            VALUE "FileDescription", "Mastering Utility\0"  
+            VALUE "FileDescription", "Mastering Project Creation Wizard\0"
             VALUE "FileVersion", "@PROJECT_VERSION@\0"
-            VALUE "InternalName", "masteringutil_launcher.exe\0"
+            VALUE "InternalName", "masteringutil_wizard.exe\0"
             VALUE "LegalCopyright", "(C) 2025 Daniel McGuire\0"
-            VALUE "OriginalFilename", "masteringutility.exe\0"
-            VALUE "ProductName", "Daniel's Mastering Utility (@GIT_COMMIT_HASH@)\0"
+            VALUE "OriginalFilename", "masteringwizard.exe\0"
+            VALUE "ProductName", "Daniel's Mastering Utility @FULL_VERSION_STRING\0"
             VALUE "ProductVersion", "@PROJECT_VERSION@\0"
         END
     END
