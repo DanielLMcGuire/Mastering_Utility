@@ -1,7 +1,7 @@
 # Mastering Utility
 
-![GitHub License](https://img.shields.io/github/license/DanielLMcGuire/Mastering_Utility)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml)
+![GitHub License](https://img.shields.io/github/license/DanielLMcGuire/Mastering_Utility?style=plastic)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml?branch=master&event=push&style=plastic&label=build%2Btests)
 
 Simplifies audio tagging using a metadata markup format and a Wizard to aid in creating the format.
 Includes a C++ tagging API (Apache 2.0) and an Argument Parser library (MIT).
