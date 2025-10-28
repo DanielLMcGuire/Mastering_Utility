@@ -319,7 +319,7 @@ void MasteringUtility::ProcessSong(const Song& song, const std::filesystem::path
 
 		std::ostringstream cmd;
 		cmd << "ffmpeg -y "
-			<< "-i \"" << song.Path << "\" "  
+			<< "-i \"" << song.Path.string() << "\" "  
 			<< "-c:a " << song.Codec << " ";
 
 		if (!song.Title.empty())     cmd << "-metadata title=\"" << song.Title << "\" ";
