@@ -48,7 +48,7 @@ bool compareStrings(const std::string& a, const std::string& b, const std::strin
 int main(int argc, char** argv) {
 	auto start = std::chrono::high_resolution_clock::now(); // start timer
 	std::filesystem::path outFile =
-		std::filesystem::temp_directory_path() / ("tempdir_" + generateRandomString(8)) / "test.ini";
+		std::filesystem::temp_directory_path() / ("tempdir_" + generateRandomString(8)) / "test.mas";
 
 	std::filesystem::path tempDir = outFile.parent_path();
 

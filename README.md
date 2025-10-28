@@ -88,7 +88,7 @@ It will:
 
 ## Markup File Format
 
-```Markup
+```cpp
 album 1 ("Album Title", "Artist Name", "© 2025 Copyright", "cover.jpg", "./source", "./output", "Genre", "2025", "Comment")
 {
     song 1 ("Track Title", "Artist Name", 1, "input.wav", "01-track.mp3", "libmp3lame", "Genre", "2025", "Comment")
@@ -119,8 +119,8 @@ song <ID> ("Title", "Artist", TrackNumber, "SourceFile", "OutputFile", "Codec", 
 ## Example Workflow
 
 ```bash
-./masteringwizard -f="myproject.Markup"
-./masteringutility -f="myproject.Markup"
+./masteringwizard -f="myproject.mas"
+./masteringutility -f="myproject.mas"
 ```
 
 Wizard will prompt for album/song info and generate a ready-to-use Markup file.
