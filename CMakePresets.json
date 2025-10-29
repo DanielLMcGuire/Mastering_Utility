@@ -51,6 +51,24 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "relwithdebinfo",
+      "displayName": "RelWithDebInfo",
+      "description": "Sets the build type to RelWithDebInfo",
+      "inherits": [ "base-config", "base-config-windows" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "minsizerel",
+      "displayName": "MinSizeRel",
+      "description": "Sets the build type to MinSizeRel",
+      "inherits": [ "base-config", "base-config-windows" ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
     }
   ]
 }
