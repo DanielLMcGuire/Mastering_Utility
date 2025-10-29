@@ -103,7 +103,7 @@ public:
 	{
 	public:
 		/// @brief  Album art path
-		std::string AlbumArt;
+		std::filesystem::path AlbumArt;
 		/// @brief  List of songs
 		Songs SongsList;
 
@@ -157,7 +157,8 @@ public:
 	 *
 	 * Processes a song using FFMPEG
 	 * @param song Song to process
+	 * @param album Parent album of song	
 	 * @param destFolder album.NewPath of Songs parent album
 	 */
-	void ProcessSong(const Song& song, const std::filesystem::path& destFolder);
+	void ProcessSong(const Song& song, const Album& album);
 };
