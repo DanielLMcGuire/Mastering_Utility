@@ -368,9 +368,9 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 			std::cout << "  Running (attempt " << attempt << "): " << command << std::endl;
 
 #ifdef _WIN32
-			std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(command.c_str(), "r"), _pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(_popen(command.c_str(), "r"), _pclose);
 #else
-			std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), (int(*)(FILE*))pclose);
 #endif
 			if (!pipe) {
 				std::cerr << "  Failed to open pipe for command execution\n";
