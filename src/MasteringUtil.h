@@ -157,8 +157,7 @@ public:
 	 *
 	 * Processes a song using FFMPEG
 	 * @param song Song to process
-	 * @param album Parent album of song	
-	 * @param destFolder album.NewPath of Songs parent album
+	 * @param album Parent album of song
 	 */
 	void ProcessSong(const Song& song, const Album& album);
 };
