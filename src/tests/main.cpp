@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
 		allOk &= compareStrings(orig.Title, parsed.Title, "Album Title");
 		allOk &= compareStrings(orig.Artist, parsed.Artist, "Album Artist");
 		allOk &= compareStrings(orig.Copyright, parsed.Copyright, "Album Copyright");
-		allOk &= compareStrings(orig.AlbumArt, parsed.AlbumArt, "Album Art");
+		allOk &= compareStrings(orig.AlbumArt.string(), parsed.AlbumArt.string(), "Album Art");
 		allOk &= compareStrings(orig.Path.string(), parsed.Path.string(), "Album Path");
 		allOk &= compareStrings(orig.NewPath.string(), parsed.NewPath.string(), "Album NewPath");
 		allOk &= compareStrings(orig.Genre, parsed.Genre, "Album Genre");
