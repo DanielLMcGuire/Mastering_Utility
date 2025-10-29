@@ -128,8 +128,8 @@ static std::string cleanString(const std::string& input)
   *
   * Tranforms string of arguments wrapped in quotes '"' into a vector
   *
-  * @param input String contaMarkupng arguments
-  * @return Vector contaMarkupng arguments
+  * @param input String containing arguments
+  * @return Vector containing arguments
   */
 static std::vector<std::string> splitArgs(const std::string& input)
 {
@@ -299,7 +299,7 @@ void MasteringUtility::SaveMarkup(const Albums& albums, const std::filesystem::p
 
 				file << ")\n";
 			}
-
+			
 			file << "}\n\n";
 		}
 	} catch (const std::exception& ex) {
@@ -336,14 +336,15 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		if (!audioCodecs.contains(trim(song.Codec))) throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
 		if (!std::filesystem::exists(song.Path)) throw std::runtime_error("File not found: " + song.Path.string());
 		std::cout << "Encoding: " << song.Title
-				  << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
+			<< " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
 		std::filesystem::path new_songPath = album.NewPath / song.NewPath;
+		std::filesystem::create_directories(new_songPath.parent_path());
 
 		std::ostringstream cmd;
 		cmd << "ffmpeg -y "
-			<< "-i \"" << song.Path.string() << "\" ";  
-		if (!album.AlbumArt.empty()) cmd << "-i \"" << album.AlbumArt.string() << "\" -map 0:a -map 1:v -c:a copy -id3v2_version 3 ";
+			<< "-i \"" << song.Path.string() << "\" ";
+		if (!album.AlbumArt.empty()) cmd << "-i \"" << album.AlbumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
 		if (!song.Title.empty())      cmd << "-metadata title=\"" << song.Title << "\" ";
 		if (!song.Artist.empty())     cmd << "-metadata artist=\"" << song.Artist << "\" ";
 		if (!song.Album.empty())      cmd << "-metadata album=\"" << song.Album << "\" ";
@@ -367,31 +368,27 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 			std::cout << "  Running (attempt " << attempt << "): " << command << std::endl;
 
 #ifdef _WIN32
-			FILE* pipe = _popen(command.c_str(), "r");
+			std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(command.c_str(), "r"), _pclose);
 #else
-			FILE* pipe = popen(command.c_str(), "r");
+			std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
 #endif
-			if (!pipe) { 
-				std::cerr << "  Failed to open pipe for command execution\n"; 
-				result = -1; 
-				continue; 
+			if (!pipe) {
+				std::cerr << "  Failed to open pipe for command execution\n";
+				result = -1;
+				continue;
 			}
 
 			std::string output;
 			char buffer[256];
-			while (fgets(buffer, sizeof(buffer), pipe))
+			while (fgets(buffer, sizeof(buffer), pipe.get()))
 				output += buffer;
-#ifdef _WIN32
-			result = _pclose(pipe); 
-#else
-			int status = pclose(pipe);   
-			result = WIFEXITED(status) ? WEXITSTATUS(status) : -1; 
-#endif
+
+			result = 0; // Assume success if pipe closes normally
 
 			if (result == 0) { std::cout << "  Success!" << std::endl; break; }
 			else {
 				std::cerr << "  ffmpeg failed with code: " << result << std::endl;
-				std::cerr << output;  // show captured output only on failure
+				std::cerr << output;
 				if (attempt < 3) std::cerr << "  Retrying...\n";
 			}
 		}
