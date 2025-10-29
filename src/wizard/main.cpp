@@ -277,6 +277,7 @@ namespace MasteringWizard
 				song.TrackNumber = j + 1;
 				song.Path = ".";
 				song.ID = j + 1;
+				song.Album = album.Title;
 				std::string defaultCodec = "copy";
 
 				MasteringWizard::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
@@ -286,7 +287,7 @@ namespace MasteringWizard
 				MasteringWizard::prompt("Enter Song Year", song.Year, "Unexpected issue", &album.Year);
 				MasteringWizard::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", &album.Copyright);
 				MasteringWizard::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
-				MasteringWizard::prompt("Enter Song Codec (libmp3lame, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
+				MasteringWizard::prompt("Enter Song Codec (mp3, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
 				
 				MasteringWizard::preview::song(song);
 				bool addSong = g_AutoAddSongs;
