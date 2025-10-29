@@ -18,7 +18,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../argumentParser.h"
+#include "../dconsole.h"
 #include "../MasteringUtil.h"
 #include <cstdlib>
 #include <filesystem>
@@ -91,84 +91,7 @@ namespace MasteringWizard
 		}
 	} // namespace preview
 
-	/** @brief Prompt user for input with validation
-	 *
-	 * @tparam T Type of the input value
-	 * @param message Prompt message
-	 * @param[out] value Reference to store the input value
-	 * @param errorMessage Error message to display on invalid input
-	 * @param defaultValue Optional default value if user input is empty
-	 */
-	template<typename T>
-	void prompt(const std::string& message, T& value, const std::string& errorMessage, const T* defaultValue = nullptr)
-	{
-		std::string input;
-		while (true)
-		{
-			std::cout << message;
-			if (defaultValue) std::cout << " [" << *defaultValue << "]";
-			std::cout << ": ";
-
-			if (!std::getline(std::cin, input))
-			{
-				std::cerr << "Input error. " << errorMessage << std::endl;
-				continue;
-			}
-
-			if (input.empty())
-			{
-				if (defaultValue)
-				{
-					value = *defaultValue;
-					break;
-				}
-				else
-				{
-					std::cerr << errorMessage << std::endl;
-					continue;
-				}
-			}
-
-			if (input == "exit" || input == "quit")
-			{
-				cleanup(0);
-			}
-
-			if constexpr (std::is_same_v<T, std::string>) 
-			{
-				value = input;
-				break;
-			}
-			else if constexpr (std::is_same_v<T, char>) 
-			{
-				if (input.length() == 1)
-				{
-					value = input[0];
-					break;
-				}
-				else
-				{
-					std::cerr << "Please enter a single character. " << errorMessage << std::endl;
-					continue;
-				}
-			}
-			else
-			{
-				std::istringstream iss(input);
-				T temp;
-				char leftover;
-				if ((iss >> temp) && !(iss >> leftover))
-				{
-					value = temp;
-					break;
-				}
-				else
-				{
-					std::cerr << "Invalid input type. " << errorMessage << std::endl;
-				}
-			}
-		}
-	}
+	
 
 	/**
 	 * @brief Parses command-line arguments, handles help flag, and determines the output Markup path.
@@ -187,14 +110,14 @@ namespace MasteringWizard
 		
 		bool ret = false;
 
-		ArgParser* parser = new ArgParser;
-		parser->registerArg("help", ArgParser::ArgType::Bool, 'h');
-		parser->registerArg("auto", ArgParser::ArgType::Bool, 'a');
-		parser->registerArg("markupfile", ArgParser::ArgType::String, 'f');
+		DConsole conlib;
+		conlib.registerArg("help", DConsole::ArgType::Bool, 'h');
+		conlib.registerArg("auto", DConsole::ArgType::Bool, 'a');
+		conlib.registerArg("markupfile", DConsole::ArgType::String, 'f');
 
-		parser->parse(argc, argv);
+		conlib.parse(argc, argv);
 
-		if (parser->f_bool("help")) 
+		if (conlib.f_bool("help")) 
 		{
 			std::cout << "Mastering Utility Wizard\n"
 					  << "Usage: mastering_wizard [--markupfile=<path>] [--auto] [--help]\n\n"
@@ -204,11 +127,11 @@ namespace MasteringWizard
 					  << "  --help, -h      Display this help message.\n";
 			ret = false;
 		}
-		if (parser->f_bool("auto")) 
+		if (conlib.f_bool("auto")) 
 		{
 			g_AutoAddSongs = true;
 		}
-		std::string markupfile = parser->f_string("markupfile");
+		std::string markupfile = conlib.f_string("markupfile");
 		if (!markupfile.empty()) {
 			markupPath = markupfile;
 			ret = true;
@@ -227,7 +150,6 @@ namespace MasteringWizard
 				ret = true;
 			}        
 		}
-		delete parser;
 		return ret;
 	}
 
@@ -246,7 +168,7 @@ namespace MasteringWizard
 	void collectAlbumsInteractively(MasteringUtility::Albums& albums) 
 	{
 		int albumCount = 1;
-		MasteringWizard::prompt("Enter number of albums to create", albumCount, "Must be a positive integer.", &albumCount);
+		DConsole::prompt("Enter number of albums to create", albumCount, "Must be a positive integer.", &albumCount);
 		if (albumCount < 1)
 		{
 			albumCount = 1;
@@ -259,16 +181,16 @@ namespace MasteringWizard
 			album.ID = i + 1;
 			std::string defaultCopyright = "N/A";
 
-			MasteringWizard::prompt("Enter Album Title", album.Title, "Album title cannot be empty.");
-			MasteringWizard::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.");
-			MasteringWizard::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.");
-			MasteringWizard::prompt("Enter Album Year", album.Year, "Album year cannot be empty.");
-			MasteringWizard::prompt("Enter Album Copyright Info", album.Copyright, "Album copyright cannot be empty.", &defaultCopyright);
-			MasteringWizard::prompt("Enter Relative Path to save songs", album.NewPath, "Album save path cannot be empty.");
-			MasteringWizard::prompt("Enter Relative Path to Album Art", album.AlbumArt, "Album art path cannot be empty.");
+			DConsole::prompt("Enter Album Title", album.Title, "Album title cannot be empty.");
+			DConsole::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.");
+			DConsole::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.");
+			DConsole::prompt("Enter Album Year", album.Year, "Album year cannot be empty.");
+			DConsole::prompt("Enter Album Copyright Info", album.Copyright, "Album copyright cannot be empty.", &defaultCopyright);
+			DConsole::prompt("Enter Relative Path to save songs", album.NewPath, "Album save path cannot be empty.");
+			DConsole::prompt("Enter Relative Path to Album Art", album.AlbumArt, "Album art path cannot be empty.");
 
 			int songCount = 0;
-			MasteringWizard::prompt("How many songs in \"" + album.Title + "\"?", songCount, "Must be 0 or a positive integer.", &songCount);
+			DConsole::prompt("How many songs in \"" + album.Title + "\"?", songCount, "Must be 0 or a positive integer.", &songCount);
 			if (songCount < 0) throw std::runtime_error("Song count cannot be negative.");
 
 			for (int j = 0; j < songCount; ++j)
@@ -280,14 +202,14 @@ namespace MasteringWizard
 				song.Album = album.Title;
 				std::string defaultCodec = "copy";
 
-				MasteringWizard::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
-				MasteringWizard::prompt("Enter Song Title", song.Title, "Song title cannot be empty.");
-				MasteringWizard::prompt("Enter Song Artist", song.Artist, "Unexpected issue", &album.Artist);
-				MasteringWizard::prompt("Enter Song Genre", song.Genre, "Unexpected issue", &album.Genre);
-				MasteringWizard::prompt("Enter Song Year", song.Year, "Unexpected issue", &album.Year);
-				MasteringWizard::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", &album.Copyright);
-				MasteringWizard::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
-				MasteringWizard::prompt("Enter Song Codec (mp3, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
+				DConsole::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
+				DConsole::prompt("Enter Song Title", song.Title, "Song title cannot be empty.");
+				DConsole::prompt("Enter Song Artist", song.Artist, "Unexpected issue", &album.Artist);
+				DConsole::prompt("Enter Song Genre", song.Genre, "Unexpected issue", &album.Genre);
+				DConsole::prompt("Enter Song Year", song.Year, "Unexpected issue", &album.Year);
+				DConsole::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", &album.Copyright);
+				DConsole::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
+				DConsole::prompt("Enter Song Codec (mp3, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
 				
 				MasteringWizard::preview::song(song);
 				bool addSong = g_AutoAddSongs;
@@ -295,7 +217,7 @@ namespace MasteringWizard
 					char response = '\0';
 					while (response != 'y' && response != 'n' && response != 'a') 
 					{ 
-					MasteringWizard::prompt("Would you like to add this song to the list? (y/n/a)", response, "Please enter 'y', 'n', or 'a'.");
+					DConsole::prompt("Would you like to add this song to the list? (y/n/a)", response, "Please enter 'y', 'n', or 'a'.");
 					}
 					switch (response) {
 					case 'a':
@@ -319,7 +241,7 @@ namespace MasteringWizard
 		
 			MasteringWizard::preview::album(album);
 			char addAlbumResponse = 'Y';
-			MasteringWizard::prompt("Would you like to add this album to the list? (y/n)", addAlbumResponse, "Please enter 'y' or 'n'.", &addAlbumResponse);
+			DConsole::prompt("Would you like to add this album to the list? (y/n)", addAlbumResponse, "Please enter 'y' or 'n'.", &addAlbumResponse);
 			if (addAlbumResponse == 'y' || addAlbumResponse == 'Y')
 			{
 				albums.push_back(album);
@@ -341,7 +263,7 @@ namespace MasteringWizard
 	{
 		 char saveResponse = 'Y';
 		std::string promptMsg = "Would you like to save \"" + markupPath.string() + "\"? (y/n)";
-		MasteringWizard::prompt(promptMsg, saveResponse, "Please enter 'y' or 'n'.", &saveResponse);
+		DConsole::prompt(promptMsg, saveResponse, "Please enter 'y' or 'n'.", &saveResponse);
 		if (saveResponse == 'y' || saveResponse == 'Y')
 		{
 			return true;

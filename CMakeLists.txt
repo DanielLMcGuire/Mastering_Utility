@@ -117,11 +117,11 @@ target_include_directories(masteringutil PUBLIC
 	${CMAKE_SOURCE_DIR}/src
 )
 
-add_library(argumentparser STATIC
-	src/argumentParser.cpp
+add_library(consoleutil STATIC
+	src/dconsole.cpp
 )
 
-target_include_directories(argumentparser PUBLIC
+target_include_directories(consoleutil PUBLIC
 	${CMAKE_SOURCE_DIR}/src
 )
 
@@ -130,7 +130,7 @@ add_executable(masteringutil_launcher
 	${CMAKE_CURRENT_BINARY_DIR}/launcher.rc
 )
 target_link_libraries(masteringutil_launcher
-	PRIVATE masteringutil argumentparser
+	PRIVATE masteringutil consoleutil
 )
 set_target_properties(masteringutil_launcher PROPERTIES OUTPUT_NAME MasteringUtility)
 
@@ -139,7 +139,7 @@ add_executable(masteringutil_wizard
 	${CMAKE_CURRENT_BINARY_DIR}/wizard.rc
 )
 target_link_libraries(masteringutil_wizard
-	PRIVATE masteringutil argumentparser
+	PRIVATE masteringutil consoleutil
 )
 set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizard)
 
@@ -148,6 +148,6 @@ add_executable(masteringutil_tests
 	${CMAKE_CURRENT_BINARY_DIR}/tests.rc
 )
 target_link_libraries(masteringutil_tests
-	PRIVATE masteringutil
+	PRIVATE masteringutil consoleutil
 )
 set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)

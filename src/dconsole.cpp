@@ -1,6 +1,6 @@
 /**
- * @file argumentParser.cpp
- * @brief Implementation of the Argument Parser
+ * @file dconsole.cpp
+ * @brief Implementation of Daniel's Console Library
  * @author Daniel McGuire
  */
 
@@ -8,13 +8,27 @@
 //
 // Licensed under the MIT License
 
-#include "argumentParser.h"
+#include "dconsole.h"
 #include <charconv>
 #include <cstring>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <utility>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+void enableVirtualTerminal() {
+#ifdef _WIN32
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dwMode = 0;
+	GetConsoleMode(hOut, &dwMode);
+	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	SetConsoleMode(hOut, dwMode);
+#endif
+}
 
 /**
  * @brief Helper function to strip surrounding quotes from a string
@@ -29,7 +43,16 @@ static void stripQuotes(std::string& str)
 	}
 }
 
-void ArgParser::registerArg(std::string longName, ArgType type, char shortName)
+DConsole::DConsole()
+{	
+	enableVirtualTerminal();
+}
+
+void DConsole::printColorText(const std::string& text, const std::string& colorCode) {
+	std::cout << colorCode << text << "\033[0m";
+}
+
+void DConsole::registerArg(std::string longName, ArgType type, char shortName)
 {
 	RegisteredArg arg{ std::move(longName), shortName, type, false, "" };
 	argsLong[arg.longName] = std::move(arg);
@@ -40,7 +63,7 @@ void ArgParser::registerArg(std::string longName, ArgType type, char shortName)
 	}
 }
 
-void ArgParser::parse(int argc, char** argv)
+void DConsole::parse(int argc, char** argv)
 {
 	for (int i = 1; i < argc; ++i)
 	{
@@ -118,7 +141,7 @@ void ArgParser::parse(int argc, char** argv)
 	}
 }
 
-bool ArgParser::f_bool(const std::string& longName) const
+bool DConsole::f_bool(const std::string& longName) const
 {
 	auto it = argsLong.find(longName);
 	if (it != argsLong.end() && it->second.type == ArgType::Bool)
@@ -128,7 +151,7 @@ bool ArgParser::f_bool(const std::string& longName) const
 	return false;
 }
 
-std::string ArgParser::f_string(const std::string& longName, const std::string& defaultVal) const
+std::string DConsole::f_string(const std::string& longName, const std::string& defaultVal) const
 {
 	auto it = argsLong.find(longName);
 	if (it != argsLong.end() && it->second.type == ArgType::String && it->second.provided)
@@ -138,7 +161,7 @@ std::string ArgParser::f_string(const std::string& longName, const std::string& 
 	return defaultVal;
 }
 
-int ArgParser::f_int(const std::string& longName, int defaultVal) const
+int DConsole::f_int(const std::string& longName, int defaultVal) const
 {
 	auto it = argsLong.find(longName);
 	if (it != argsLong.end() && it->second.type == ArgType::Int && it->second.provided)
@@ -153,7 +176,7 @@ int ArgParser::f_int(const std::string& longName, int defaultVal) const
 }
 
 
-char ArgParser::f_char(const std::string& longName, char defaultVal) const
+char DConsole::f_char(const std::string& longName, char defaultVal) const
 {
 	auto it = argsLong.find(longName);
 	if (it != argsLong.end() && it->second.type == ArgType::Char && it->second.provided)

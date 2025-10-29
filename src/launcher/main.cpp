@@ -18,7 +18,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../argumentParser.h"
+#include "../dconsole.h"
 #include "../MasteringUtil.h"
 #include <filesystem>
 #include <iostream>
@@ -31,13 +31,13 @@ int main( int argc, char* argv[] )
 
 	MasteringUtility masterer;
 
-	ArgParser* parser = new ArgParser;
-	parser->registerArg("help", ArgParser::ArgType::Bool, 'h');
-	parser->registerArg("markupfile", ArgParser::ArgType::String, 'f');
+	DConsole conlib;
+	conlib.registerArg("help", DConsole::ArgType::Bool, 'h');
+	conlib.registerArg("markupfile", DConsole::ArgType::String, 'f');
 
-	parser->parse(argc, argv);
+	conlib.parse(argc, argv);
 
-	std::filesystem::path markupPath{ parser->f_string("markupfile") };
+	std::filesystem::path markupPath{ conlib.f_string("markupfile") };
 	if (markupPath.empty())
 	{
 		if (argc > 1 && std::filesystem::exists(argv[1]))
@@ -45,7 +45,6 @@ int main( int argc, char* argv[] )
 		else
 			return 1;
 	}
-	delete parser;
 	try
 	{
 		masterer.Master( markupPath );

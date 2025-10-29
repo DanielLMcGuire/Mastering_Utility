@@ -19,6 +19,7 @@
 // limitations under the License.
 
 #include "../MasteringUtil.h"
+#include "../dconsole.h"
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -62,6 +63,7 @@ bool compareStrings(const std::string& a, const std::string& b, const std::strin
 
 /// @brief CRT Entry Point
 int main(int argc, char** argv) {
+	DConsole conlib;
 	auto start = std::chrono::high_resolution_clock::now(); // start timer
 	std::filesystem::path outFile =
 		std::filesystem::temp_directory_path() / ("tempdir_" + generateRandomString(8)) / "test.mas";
@@ -216,11 +218,13 @@ int main(int argc, char** argv) {
 
 	if (allOk) {
 		std::chrono::duration<double> elapsed = end - start;
-		std::cout << "PASS: All metadata matched successfully in " << elapsed.count() << " seconds.\n";
+		conlib.printColorText("PASS: ", ANSIColorGreen);
+		std::cout << "All metadata matched successfully in " << elapsed.count() << " seconds.\n";
 		return 0;
 	}
 	else {
-		std::cerr << "FAIL: Metadata mismatch detected!\n";
+		conlib.printColorText("FAIL: ", ANSIColorRed);
+		std::cerr << "Metadata mismatch detected!\n";
 		return 1;
 	}
 }
