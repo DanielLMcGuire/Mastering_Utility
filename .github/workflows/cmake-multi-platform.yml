@@ -73,15 +73,17 @@ jobs:
       run: "%CD%\\build\\MasteringTests.exe"
 
     - name: Upload Artifacts
+      if: matrix.os != 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
         path: ${{ steps.strings-posix.outputs.build-output-dir }}
         retention-days: 30
-    
     - name: Upload Artifacts (Windows)
+      if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
         path: ${{ steps.strings-nt.outputs.build-output-dir }}
         retention-days: 30
+
