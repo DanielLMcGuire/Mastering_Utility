@@ -25,19 +25,22 @@ jobs:
             cpp_compiler: clang++
 
     steps:
-    - name: Checkout repository (All)
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set build output directory (All)
+    - name: Set build output directory
+      if: matrix.os != 'windows-latest'
       id: strings
       shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Set up MSVC (Windows)
+    - name: Set build output directory (Windows)
       if: matrix.os == 'windows-latest'
-      uses: microsoft/setup-msbuild@v1
+      id: strings
+      shell: bash
+      run: echo "build-output-dir=${{ github.workspace }}/build/dist" >> "$GITHUB_OUTPUT"
 
-    - name: Configure (Linux and macOS)
+    - name: Configure
       if: matrix.os != 'windows-latest'
       shell: bash
       run: cmake -B ${{ steps.strings.outputs.build-output-dir }} \
@@ -47,17 +50,14 @@ jobs:
                 -G Ninja \
                 -S ${{ github.workspace }}
                 
-    - name: Build (Linux and macOS)
+    - name: Build
       if: matrix.os != 'windows-latest'
       shell: bash
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} 
 
-    - name: Run Unit Tests (Linux and macOS)
-      if: matrix.os != 'windows-latest'
-      shell: bash
-      run: ${{ steps.strings.outputs.build-output-dir }}/MasteringTests
-
-
+    - name: Set up MSVC (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1
     - name: Configure and Build (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
@@ -72,9 +72,7 @@ jobs:
       shell: cmd
       run: "%CD%\\build\\MasteringTests.exe"
 
-
-
-    - name: Upload Artifacts (All)
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
