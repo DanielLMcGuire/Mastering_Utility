@@ -30,13 +30,13 @@ jobs:
 
     - name: Set build output directory
       if: matrix.os != 'windows-latest'
-      id: strings
+      id: strings-posix
       shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
     - name: Set build output directory (Windows)
       if: matrix.os == 'windows-latest'
-      id: strings
+      id: strings-nt
       shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build/dist" >> "$GITHUB_OUTPUT"
 
@@ -76,5 +76,12 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
-        path: ${{ steps.strings.outputs.build-output-dir }}
+        path: ${{ steps.strings-posix.outputs.build-output-dir }}
+        retention-days: 30
+    
+    - name: Upload Artifacts (Windows)
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{ matrix.os }}
+        path: ${{ steps.strings-nt.outputs.build-output-dir }}
         retention-days: 30
