@@ -53,10 +53,11 @@ EOF
 iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=
 PNGBASE64
 
-  out="dist/${app}-x86_64.AppImage"
+  out="../build/dist/${app}-x86_64.AppImage"
   echo "Running appimagetool -> $out"
   ./appimagetool-x86_64.AppImage "$appdir" "$out"
   rc=$?
+  rm -rf "$appdir"
   if [ $rc -ne 0 ]; then
     echo "appimagetool failed for $app (exit $rc) — continuing to next app"
     continue
@@ -65,4 +66,4 @@ PNGBASE64
   echo "Built $out"
 done
 
-echo "All done. Check ./dist/"
+echo "All done. Check build/dist/"

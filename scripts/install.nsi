@@ -3,8 +3,8 @@
 !define COMP_NAME "Daniel McGuire"
 !define VERSION "1.0.0.0"
 !define COPYRIGHT "(C) 2025 Daniel McGuire"
-!define DESCRIPTION "FFMPEG INI SYSTEM"
-!define INSTALLER_NAME "masteringutil64_setup.exe"
+!define DESCRIPTION "Mastering Utility 1.0"
+!define INSTALLER_NAME "..\build\dist\masteringutil64_setup.exe"
 !define MAIN_APP_EXE "MasteringWizard.exe"
 !define INSTALL_TYPE "SetShellVarContext all"
 !define REG_ROOT "HKLM"
@@ -76,8 +76,8 @@ Section -MainProgram
 ${INSTALL_TYPE}
 SetOverwrite ifnewer
 SetOutPath "$INSTDIR"
-file "MasteringUtility.exe"
-file "MasteringWizard.exe"
+file "..\build\MasteringUtility.exe"
+file "..\build\MasteringWizard.exe"
 SetOutPath "$INSTDIR\docs"
 file /r "..\docs\html\*"
 

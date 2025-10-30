@@ -156,3 +156,27 @@ target_link_libraries(masteringutil_tests
 	PRIVATE masteringutil consoleutil
 )
 set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)
+
+if(WIN32)
+add_custom_target(build_msi
+    COMMAND "${CMAKE_SOURCE_DIR}/scripts/makemsi.cmd"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating MSI installer"
+)
+add_dependencies(build_msi masteringutil_wizard masteringutil_launcher)
+endif()
+add_custom_target(build_all)
+add_dependencies(build_all 
+	masteringutil_wizard 
+	masteringutil_tests 
+	masteringutil_launcher
+)
+if(WIN32)
+add_dependencies(build_all build_msi)
+
+add_custom_target(install_msi
+    COMMAND msiexec /i "${CMAKE_BINARY_DIR}/MyAppInstaller.msi" /quiet /norestart
+    COMMENT "Deploying MSI"
+)
+add_dependencies (install_msi build_msi)
+endif()

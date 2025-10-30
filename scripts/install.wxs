@@ -16,10 +16,10 @@
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="INSTALLFOLDER" Name="DanielsMasterer">
         <Component Id="MasteringWizardExe" Guid="*">
-          <File Id="MasteringWizardExeFile" Source="masteringwizard.exe" KeyPath="yes"/>
+          <File Id="MasteringWizardExeFile" Source="..\build\masteringwizard.exe" KeyPath="yes"/>
         </Component>
         <Component Id="MasteringUtilityExe" Guid="*">
-          <File Id="MasteringUtilityExeFile" Source="masteringutility.exe" KeyPath="yes"/>
+          <File Id="MasteringUtilityExeFile" Source="..\build\masteringutility.exe" KeyPath="yes"/>
         </Component>
       </Directory>
     </StandardDirectory>
