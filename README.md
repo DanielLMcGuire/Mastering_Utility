@@ -3,7 +3,7 @@
 [![CMake Multi-Platform Build](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml/badge.svg?branch=master&event=push)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
 
 C++ 20 library for audio tagging using a metadata markup format and a Wizard to aid in creating the format.
-Includes a C++ tagging API (Apache 2.0) and an Console handling library (MIT).
+Includes a C++ tagging API (GPL 3.0) and an Console handling library (MIT).
 
 > [!IMPORTANT]
 > API docs are still in progress.
@@ -134,6 +134,7 @@ Wizard will prompt for album/song info and generate a ready-to-use Markup file.
 
 ## License
 
+GPL 3.0
 See [LICENSE](LICENSE) for details.
 
 ## Contributing
