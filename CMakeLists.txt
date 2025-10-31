@@ -65,7 +65,7 @@ if(USE_LLD)
 endif()
 
 if(MSVC)
-    add_compile_options(/EHsc /MP)
+    add_compile_options(/EHsc)
 
     set(RELEASE_FLAGS "/O2 /WX")
     set(LINKER_FLAGS "/LTCG")
@@ -158,24 +158,33 @@ target_link_libraries(masteringutil_tests
 set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)
 
 if(WIN32)
-add_custom_target(build_msi
-    COMMAND "${CMAKE_SOURCE_DIR}/scripts/makemsi.cmd"
+set(MSI_FILE "${CMAKE_BINARY_DIR}/dist/masteringutil64.msi")
+add_custom_command(
+    OUTPUT "${MSI_FILE}"
+    COMMAND "${CMAKE_SOURCE_DIR}/scripts/makemsi.cmd" ${CMAKE_CURRENT_BINARY_DIR}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    DEPENDS masteringutil_wizard masteringutil_launcher
     COMMENT "Generating MSI installer"
 )
-add_dependencies(build_msi masteringutil_wizard masteringutil_launcher)
+
+add_custom_target(build_msi ALL
+    DEPENDS "${MSI_FILE}"
+)
 endif()
+
 add_custom_target(build_all)
 add_dependencies(build_all 
 	masteringutil_wizard 
 	masteringutil_tests 
 	masteringutil_launcher
 )
+
 if(WIN32)
 add_dependencies(build_all build_msi)
 
 add_custom_target(install_msi
-    COMMAND msiexec /i "${CMAKE_BINARY_DIR}/MyAppInstaller.msi" /quiet /norestart
+    COMMAND ${CMAKE_COMMAND} -E sleep 1
+    COMMAND powershell -Command "Start-Process 'msiexec.exe' -ArgumentList '/i', '${MSI_FILE}', '/quiet', '/norestart' -Verb RunAs"
     COMMENT "Deploying MSI"
 )
 add_dependencies (install_msi build_msi)
