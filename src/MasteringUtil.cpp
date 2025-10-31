@@ -30,11 +30,6 @@
 #include <memory>     
 #include <string>
 
-
-
-
-
-
 /**
  * @brief Get Audio Codecs
  * Requests audio codecs from FFMPEG
@@ -352,6 +347,7 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		if (!song.Year.empty())       cmd << "-metadata date=\"" << song.Year << "\" ";
 		if (!song.Comment.empty())    cmd << "-metadata comment=\"" << song.Comment << "\" ";
 		if (!song.Copyright.empty())  cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
+		cmd << "-metadata encoder-info=\"Daniel's Mastering Utility\" ";
 		if (!song.Codec.empty())      cmd << "-c:a \"" << song.Codec << "\" ";
 
 		if (song.Codec == "flac")     cmd << "-compression_level 12 ";
