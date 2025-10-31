@@ -16,7 +16,7 @@
 Write-Host "Building Mastering Utility...`n" -ForegroundColor Cyan
 try {
     Write-Host "Generating..." -ForegroundColor Cyan
-    cmake -S .. -B ..\build -DCMAKE_BUILD_TYPE=Release -G Ninja
+    cmake -S .. -B ..\build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCMAKE_C_COMPILER="clang-cl.exe" -DCMAKE_CXX_COMPILER="clang-cl.exe"
     if ($LASTEXITCODE -ne 0) { throw "cmake generation failed" }
     Write-Host "Generated." -ForegroundColor Green
 
