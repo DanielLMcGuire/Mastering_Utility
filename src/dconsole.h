@@ -3,6 +3,11 @@
  * @brief Daniel's Console Library (MIT License)
  * @author Daniel McGuire
  */
+
+ // Copyright 2025 Daniel McGuire
+ //
+ // Licensed under the MIT License, unless used with GPLv3
+
 #pragma once
 #include <cstring>
 #include <string>
@@ -10,10 +15,6 @@
 #include <iostream>
 #include <type_traits>
 #include <sstream>
-
-// Copyright 2025 Daniel McGuire
-//
-// Licensed under the MIT License
 
 // Regular Colors
 #define ANSIColorBlack   "\033[30m"

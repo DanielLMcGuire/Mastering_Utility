@@ -6,7 +6,7 @@
 
 // Copyright 2025 Daniel McGuire
 //
-// Licensed under the MIT License
+// Licensed under the MIT License, unless used with GPLv3
 
 #include "dconsole.h"
 #include <charconv>
