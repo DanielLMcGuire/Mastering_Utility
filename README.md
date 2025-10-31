@@ -34,6 +34,8 @@ Grab the installer for your platform from the [Releases page](https://github.com
 
 ### Build from source
 
+<sub>Run from Visual Studio Powershell if using MSVC</sub>
+
 ```bash
 git clone --depth=1 https://github.com/DanielLMcGuire/Mastering_Utility.git
 cd Mastering_Utility
@@ -42,10 +44,12 @@ cmake -S . -B build
 # Optional: use Ninja for faster build
 # cmake -S . -B build -G Ninja
 
-cmake --build build
-````
+cmake --build build --target build_all
+```
 
 ## Usage
+
+<sub><code>cd build</code></sub>
 
 ### 1. Mastering Wizard (`masteringwizard`)
 
@@ -66,7 +70,8 @@ Prompts for:
 - Songs (source file, title, artist, track number, output file)
 - Audio codec settings
 
-**Tip:** Type `exit` or `quit` anytime to leave the wizard.
+> [!TIP] 
+> Type `exit` or `quit` anytime to leave the wizard.
 
 ### 2. Mastering Utility (`masteringutility`)
 
