@@ -93,7 +93,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${LI
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG      "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${LINKER_DEBUG_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG   "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${LINKER_DEBUG_FLAGS}")
 
-
+set(SCRIPTS_DIR "${CMAKE_SOURCE_DIR}/scripts")
 
 if(WIN32)
 	enable_language(RC)
@@ -113,6 +113,10 @@ set(ARGUMENTPARSER_SOURCES
 file(GLOB_RECURSE LAUNCHER_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/launcher/*.cpp")
 file(GLOB_RECURSE WIZARD_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/wizard/*.cpp")
 file(GLOB_RECURSE TESTS_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/tests/*.cpp")
+
+if(WIN32)
+	configure_file("scripts/install.wxs" "${CMAKE_CURRENT_BINARY_DIR}/install.wxs")
+endif()
 
 add_library(masteringutil STATIC
 	src/MasteringUtil.cpp
@@ -161,8 +165,8 @@ if(WIN32)
 set(MSI_FILE "${CMAKE_BINARY_DIR}/dist/masteringutil64.msi")
 add_custom_command(
     OUTPUT "${MSI_FILE}"
-    COMMAND "${CMAKE_SOURCE_DIR}/scripts/makemsi.cmd" ${CMAKE_CURRENT_BINARY_DIR}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMAND "${SCRIPTS_DIR}/makemsi.cmd" ${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${SCRIPTS_DIR}
     DEPENDS masteringutil_wizard masteringutil_launcher
     COMMENT "Generating MSI installer"
 )
