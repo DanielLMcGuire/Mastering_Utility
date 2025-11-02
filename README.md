@@ -90,28 +90,32 @@ It will:
 - Retry failed conversions up to 3 times
 
 ## Markup File Format
-
+<!-- C++ syntax looks nicer -->
 ```cpp
-album 1 ("Album Title", "Artist Name", "© 2025 Copyright", "cover.jpg", "./source", "./output", "Genre", "2025", "Comment")
+album 1 ("Album Title", "Artist Name", "© 2025 Copyright", "cover.jpg", "./source", "./output", "Genre", "2025", "Comment", "Flags")
 {
     song 1 ("Track Title", "Artist Name", 1, "input.wav", "01-track.mp3", "libmp3lame", "Genre", "2025", "Comment")
-    song 2 ("Another Track", "Artist Name", 2, "input2.flac", "02-track.flac", "flac", "Genre", "2025")
+    song 2 ("Another Track", "Artist Name", 2, "input2.flac", "02-track.flac", "flac", "Genre", "2025", "Comment", "-compression_level 12")
 }
 ```
 
 **Album syntax:**
 
 ```ini
-album <ID> ("Title", "Artist", "Copyright", "AlbumArtPath", "SourcePath", "OutputPath", "Genre", "Year", "Comment")
+album <ID> ("Title", "Artist", "Copyright", "AlbumArtPath", "SourcePath", "OutputPath", "Genre", "Year", "Comment", "Flags")
 ```
 
 **Song syntax:**
 
 ```ini
-song <ID> ("Title", "Artist", TrackNumber, "SourceFile", "OutputFile", "Codec", "Genre", "Year", "Comment")
+song <ID> ("Title", "Artist", TrackNumber, "SourceFile", "OutputFile", "Codec", "Genre", "Year", "Comment", "Flags")
 ```
 
-**Supported codecs:** Any ffmpeg audio codec:
+>Comments = Optional, Comment metadata
+>
+>Flags = Optional, Flags to pass to ffmpeg, must have optional comment field specified if flags are specified, even if it is empty.
+
+**Supported codecs:** Any ffmpeg audio codec, including:
 
 - `mp3` – MP3 (VBR quality 3 default)
 - `flac` – FLAC lossless (compression 12 default)
@@ -124,8 +128,8 @@ Run ```ffmpeg --codecs``` to see more
 ## Example Workflow
 
 ```bash
-./masteringwizard -f="myproject.mas"
-./masteringutility -f="myproject.mas"
+./masteringwizard 
+./masteringutility new.mas
 ```
 
 Wizard will prompt for album/song info and generate a ready-to-use Markup file.

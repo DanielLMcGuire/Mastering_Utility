@@ -55,8 +55,10 @@ public:
 		std::string Genre;
 		/// @brief  Release year
 		std::string Year;
-		/// @brief  User comment
+		/// @brief User Comments
 		std::string Comment;
+		/// @brief  Additional Arguments
+		std::string arguments;
 		/// @brief  Copyright info
 		std::string Copyright;
 		/// @brief  File path
@@ -72,7 +74,7 @@ public:
 				Album == other.Album &&
 				Genre == other.Genre &&
 				Year == other.Year &&
-				Comment == other.Comment &&
+				arguments == other.arguments &&
 				Copyright == other.Copyright &&
 				Path == other.Path &&
 				NewPath == other.NewPath;

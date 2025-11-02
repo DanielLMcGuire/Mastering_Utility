@@ -2,21 +2,22 @@
  * @file MasteringUtil.cpp
  * @brief Implementation of the Mastering Utility
  * @author Daniel McGuire
- */ 
+ */
 
-// Copyright 2025 Daniel McGuire
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+ // Copyright 2025 Daniel McGuire
+ //
+ // This program is free software: you can redistribute it and/or modify
+ // it under the terms of the GNU General Public License as published by
+ // the Free Software Foundation, either version 3 of the License, or
+ // (at your option) any later version.
+ //
+ // This program is distributed in the hope that it will be useful,
+ // but WITHOUT ANY WARRANTY; without even the implied warranty of
+ // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ // GNU General Public License for more details.
+ //
+ // You should have received a copy of the GNU General Public License
+ // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "MasteringUtil.h"
 #include <filesystem>
@@ -29,11 +30,12 @@
 #include <cstdio>     
 #include <memory>     
 #include <string>
+#include <regex>
 
 /**
  * @brief Get Audio Codecs
  * Requests audio codecs from FFMPEG
- * @return set of audio codecs 
+ * @return set of audio codecs
  */
 static std::unordered_set<std::string> getAudioCodecs() {
 	std::unordered_set<std::string> audioCodecs;
@@ -77,7 +79,7 @@ static std::unordered_set<std::string> getAudioCodecs() {
 			size_t nameEnd = line.find_first_of(" \t", nameStart);
 			std::string codecName = line.substr(nameStart, nameEnd - nameStart);
 
-			audioCodecs.insert(codecName); 
+			audioCodecs.insert(codecName);
 		}
 	}
 
@@ -104,9 +106,9 @@ static std::string trim(const std::string& input)
 
 /**
   * @brief Clean a string
-  * 
-  * Trims whitespace and removes quotes from strings.   
-  * 
+  *
+  * Trims whitespace and removes quotes from strings.
+  *
   * @param input String to clean
   * @return Cleaned string
   */
@@ -137,7 +139,7 @@ static std::vector<std::string> splitArgs(const std::string& input)
 		if (c == '"')
 		{
 			inQuotes = !inQuotes;
-			continue;             
+			continue;
 		}
 		else if (c == ',' && !inQuotes)
 		{
@@ -152,6 +154,56 @@ static std::vector<std::string> splitArgs(const std::string& input)
 
 	if (!current.empty()) args.push_back(trim(current));
 	return args;
+}
+
+/**
+  * @brief Sanitize arguments to prevent command injection
+  *
+  * Ensures arguments don't contain dangerous patterns that could
+  * overwrite critical ffmpeg parameters or inject shell commands.
+  *
+  * @param args Raw arguments string
+  * @return Sanitized arguments string
+  */
+static std::string sanitizeArguments(const std::string& args)
+{
+	if (args.empty()) return args;
+
+	std::string sanitized = trim(args);
+
+	// List of dangerous patterns that could overwrite critical parameters
+	std::vector<std::string> dangerousPatterns = {
+		"-i ", "--input",           
+		"ffmpeg", "ffprobe",        
+		"-metadata",                
+		"-c:a", "-codec:a",         
+		"-map",                    
+		"&&", "||", "|", ";",      
+		"$(", "`",                 
+		">", "<", ">>",             
+		"-y", "-n"                 
+	};
+
+	std::string lower = sanitized;
+	std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+	for (const auto& pattern : dangerousPatterns) {
+		std::string lowerPattern = pattern;
+		std::transform(lowerPattern.begin(), lowerPattern.end(), lowerPattern.begin(), ::tolower);
+		if (lower.find(lowerPattern) != std::string::npos) {
+			std::cerr << "[sanitizeArguments] Warning: Removing dangerous pattern '"
+				<< pattern << "' from arguments\n";
+			return "";
+		}
+	}
+
+	if (!sanitized.empty() && sanitized[0] != '-') {
+		std::cerr << "[sanitizeArguments] Warning: Arguments must start with '-'. "
+			<< "Adding prefix.\n";
+		sanitized = "- " + sanitized; 
+	}
+
+	return sanitized;
 }
 
 void MasteringUtility::ParseMarkup(const std::filesystem::path& markupFile, Albums& albums)
@@ -194,15 +246,16 @@ void MasteringUtility::ParseMarkup(const std::filesystem::path& markupFile, Albu
 					auto args = splitArgs(line.substr(start + 1, end - start - 1));
 					if (args.size() >= 8)
 					{
-						currentAlbum.Title     = cleanString(args[0]);
-						currentAlbum.Artist    = cleanString(args[1]);
+						currentAlbum.Title = cleanString(args[0]);
+						currentAlbum.Artist = cleanString(args[1]);
 						currentAlbum.Copyright = cleanString(args[2]);
-						currentAlbum.AlbumArt  = cleanString(args[3]);
-						currentAlbum.Path      = cleanString(args[4]);
-						currentAlbum.NewPath   = cleanString(args[5]);
-						currentAlbum.Genre     = cleanString(args[6]);
-						currentAlbum.Year      = cleanString(args[7]);
+						currentAlbum.AlbumArt = cleanString(args[3]);
+						currentAlbum.Path = cleanString(args[4]);
+						currentAlbum.NewPath = cleanString(args[5]);
+						currentAlbum.Genre = cleanString(args[6]);
+						currentAlbum.Year = cleanString(args[7]);
 						if (args.size() > 8) currentAlbum.Comment = cleanString(args[8]);
+						if (args.size() > 9) currentAlbum.arguments = sanitizeArguments(cleanString(args[9]));
 					}
 				}
 			}
@@ -225,20 +278,21 @@ void MasteringUtility::ParseMarkup(const std::filesystem::path& markupFile, Albu
 					auto args = splitArgs(line.substr(start + 1, end - start - 1));
 					if (args.size() >= 8)
 					{
-						song.Title  = cleanString(args[0]);
+						song.Title = cleanString(args[0]);
 						song.Artist = cleanString(args[1]);
 						try { song.TrackNumber = std::stoi(args[2]); }
 						catch (...) { std::cerr << "[ParseMarkup] Warning: invalid track number '" << args[2] << "'\n"; song.TrackNumber = 0; }
-						song.Path    = cleanString(args[3]);
+						song.Path = cleanString(args[3]);
 						song.NewPath = cleanString(args[4]);
-						song.Codec   = cleanString(args[5]);
-						song.Genre   = cleanString(args[6]);
-						song.Year    = cleanString(args[7]);
+						song.Codec = cleanString(args[5]);
+						song.Genre = cleanString(args[6]);
+						song.Year = cleanString(args[7]);
 						if (args.size() > 8) song.Comment = cleanString(args[8]);
+						if (args.size() > 9) song.arguments = sanitizeArguments(cleanString(args[9]));
 					}
 				}
 
-				song.Album     = currentAlbum.Title;
+				song.Album = currentAlbum.Title;
 				song.Copyright = currentAlbum.Copyright;
 
 				currentAlbum.SongsList.push_back(song);
@@ -264,42 +318,53 @@ void MasteringUtility::SaveMarkup(const Albums& albums, const std::filesystem::p
 
 		for (const auto& album : albums) {
 			file << "album " << album.ID << " ("
-				 << "\"" << album.Title << "\", "
-				 << "\"" << album.Artist << "\", "
-				 << "\"" << album.Copyright << "\", "
-				 << "\"" << album.AlbumArt << "\", "
-				 << "\"" << album.Path << "\", "
-				 << "\"" << album.NewPath << "\", "
-				 << "\"" << album.Genre << "\", "
-				 << "\"" << album.Year << "\"";
+				<< "\"" << album.Title << "\", "
+				<< "\"" << album.Artist << "\", "
+				<< "\"" << album.Copyright << "\", "
+				<< "\"" << album.AlbumArt << "\", "
+				<< "\"" << album.Path << "\", "
+				<< "\"" << album.NewPath << "\", "
+				<< "\"" << album.Genre << "\", "
+				<< "\"" << album.Year << "\"";
 
 			if (!album.Comment.empty())
 				file << ", \"" << album.Comment << "\"";
+
+			if (!album.arguments.empty())
+				file << ", \"" << album.arguments << "\"";
 
 			file << ")\n{\n";
 
 			for (const auto& song : album.SongsList) {
 				file << "    song " << song.ID << " ("
-					 << "\"" << song.Title << "\", "
-					 << "\"" << song.Artist << "\", "
-					 << song.TrackNumber << ", "
-					 << "\"" << song.Path << "\", "
-					 << "\"" << song.NewPath << "\", "
-					 << "\"" << song.Codec << "\", "
-					 << "\"" << song.Genre << "\", "
-					 << "\"" << song.Year << "\"";
+					<< "\"" << song.Title << "\", "
+					<< "\"" << song.Artist << "\", "
+					<< song.TrackNumber << ", "
+					<< "\"" << song.Path << "\", "
+					<< "\"" << song.NewPath << "\", "
+					<< "\"" << song.Codec << "\", "
+					<< "\"" << song.Genre << "\", "
+					<< "\"" << song.Year << "\"";
 
 				if (!song.Comment.empty())
 					file << ", \"" << song.Comment << "\"";
 
+				if (!song.arguments.empty())
+				{ 
+					if (song.Comment.empty()) file << ". \" \"";
+					file << ", \"" << song.arguments << "\"";
+				}
+
 				file << ")\n";
 			}
-			
+
 			file << "}\n\n";
 		}
-	} catch (const std::exception& ex) {
+	}
+	catch (const std::exception& ex) {
 		std::cerr << "[SaveMarkup] Exception: " << ex.what() << std::endl;
-	} catch (...) {
+	}
+	catch (...) {
 		std::cerr << "[SaveMarkup] Unknown exception" << std::endl;
 	}
 }
@@ -345,13 +410,14 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		if (!song.Album.empty())      cmd << "-metadata album=\"" << song.Album << "\" ";
 		if (!song.Genre.empty())      cmd << "-metadata genre=\"" << song.Genre << "\" ";
 		if (!song.Year.empty())       cmd << "-metadata date=\"" << song.Year << "\" ";
-		if (!song.Comment.empty())    cmd << "-metadata comment=\"" << song.Comment << "\" ";
 		if (!song.Copyright.empty())  cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
+		if (!song.Comment.empty())   cmd << "-metadata comment=\"" << song.Comment << "\" ";
 		cmd << "-metadata encoder-info=\"Daniel's Mastering Utility\" ";
 		if (!song.Codec.empty())      cmd << "-c:a \"" << song.Codec << "\" ";
 
-		if (song.Codec == "flac")     cmd << "-compression_level 12 ";
-		if (song.Codec == "mp3")      cmd << "-qscale:a 3 ";
+		// Add custom arguments BEFORE track metadata and output file
+		// This ensures they can't overwrite critical output parameters
+		if (!song.arguments.empty())  cmd << song.arguments << " ";
 
 		cmd << "-metadata track=\"" << song.TrackNumber << "\" "
 			<< "\"" << new_songPath.string() << "\"";
@@ -364,9 +430,9 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 			std::cout << "  Running (attempt " << attempt << "): " << command << std::endl;
 
 #ifdef _WIN32
-    std::unique_ptr<FILE, int(*)(FILE*)> pipe(_popen(command.c_str(), "r"), _pclose);
+			std::unique_ptr<FILE, int(*)(FILE*)> pipe(_popen(command.c_str(), "r"), _pclose);
 #else
-    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), (int(*)(FILE*))pclose);
+			std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), (int(*)(FILE*))pclose);
 #endif
 			if (!pipe) {
 				std::cerr << "  Failed to open pipe for command execution\n";
