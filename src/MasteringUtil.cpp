@@ -41,6 +41,7 @@ static std::unordered_set<std::string> getAudioCodecs() {
 	std::unordered_set<std::string> audioCodecs;
 
 	audioCodecs.insert("copy");
+	audioCodecs.insert("libmp3lame");
 	const char* cmd = "ffmpeg -codecs";
 
 #ifdef _WIN32
@@ -167,6 +168,7 @@ static std::vector<std::string> splitArgs(const std::string& input)
   */
 static std::string sanitizeArguments(const std::string& args)
 {
+	std::cout << "Specified: " << args << '\n';
 	if (args.empty()) return args;
 
 	std::string sanitized = trim(args);
@@ -202,7 +204,7 @@ static std::string sanitizeArguments(const std::string& args)
 			<< "Adding prefix.\n";
 		sanitized = "- " + sanitized; 
 	}
-
+	std::cout << "Cleaned: " << args << '\n';
 	return sanitized;
 }
 
@@ -430,6 +432,7 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		cmd << "-metadata encoder-info=\"Daniel's Mastering Utility\" ";
 		if (!song.Codec.empty())      cmd << "-c:a \"" << song.Codec << "\" ";
 
+		if (!album.arguments.empty())  cmd << album.arguments << " ";
 		if (!song.arguments.empty())  cmd << song.arguments << " ";
 
 		cmd << "-metadata track=\"" << song.TrackNumber << "\" "
