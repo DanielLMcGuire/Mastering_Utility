@@ -1,7 +1,7 @@
 !include "x64.nsh"
 !define APP_NAME "Daniel's Mastering Utility"
 !define COMP_NAME "Daniel McGuire"
-!define VERSION "1.0.1.0"
+!define VERSION "1.1.0.0"
 !define COPYRIGHT "(C) 2025 Daniel McGuire"
 !define DESCRIPTION "Mastering Utility 1.0"
 !define INSTALLER_NAME "..\build\dist\masteringutil64_setup.exe"
