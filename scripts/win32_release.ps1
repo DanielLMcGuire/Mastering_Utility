@@ -43,9 +43,6 @@ try {
     Write-Host "Built EXE Installer." -ForegroundColor Green
 
     Write-Host "`nFinished Building Mastering Utility." -ForegroundColor Green
-    Write-Host "Cleaning up..." -ForegroundColor Cyan
-    rm -r .\.wix
-    Write-Host "Cleaned up!" -ForegroundColor Green
 }
 catch {
     Write-Host "`n[ERROR] $($_.Exception.Message)" -ForegroundColor Red
