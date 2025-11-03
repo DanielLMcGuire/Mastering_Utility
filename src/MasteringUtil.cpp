@@ -376,13 +376,26 @@ void MasteringUtility::ProcessAlbum(const Album& album)
 		std::cout << "Album: " << album.Title
 			<< " (" << album.Artist << ", " << album.Year << ")" << std::endl;
 
-		if (!album.NewPath.empty())
-			std::filesystem::create_directories(album.NewPath);
+		if (!album.NewPath.empty()) std::filesystem::create_directories(album.NewPath);
 
-		for (const auto& song : album.SongsList)
-		{
-			ProcessSong(song, album);
-		}
+			auto codec = album.SongsList[1].Codec;
+			if (codec == "wav" || codec == "WAV" || codec == "flac" || codec == "FLAC") 
+			{
+				std::filesystem::path source = album.Path / album.AlbumArt;
+				std::filesystem::path destination = album.NewPath / ("cover" + album.AlbumArt.extension().string());
+
+				std::ifstream src(source, std::ios::binary);
+				if (!src)
+					throw std::runtime_error("Failed to open source: " + source.string());
+
+				std::ofstream dest(destination, std::ios::binary);
+				if (!dest)
+					throw std::runtime_error("Failed to open destination: " + destination.string());
+
+				dest << src.rdbuf();
+			}
+
+		for (const auto& song : album.SongsList) ProcessSong(song, album);
 	}
 	catch (const std::exception& ex) { std::cerr << "[ProcessAlbum] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[ProcessAlbum] Unknown exception" << std::endl; }
@@ -404,19 +417,19 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		std::ostringstream cmd;
 		cmd << "ffmpeg -y "
 			<< "-i \"" << song.Path.string() << "\" ";
-		if (!album.AlbumArt.empty()) cmd << "-i \"" << album.AlbumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
+		if (song.Codec != "flac" || song.Codec != "FLAC" || song.Codec != "wav" || song.Codec != "WAV")
+			if (!song.Codec.empty() && !album.AlbumArt.empty())
+						cmd << "-i \"" << album.AlbumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
 		if (!song.Title.empty())      cmd << "-metadata title=\"" << song.Title << "\" ";
 		if (!song.Artist.empty())     cmd << "-metadata artist=\"" << song.Artist << "\" ";
 		if (!song.Album.empty())      cmd << "-metadata album=\"" << song.Album << "\" ";
 		if (!song.Genre.empty())      cmd << "-metadata genre=\"" << song.Genre << "\" ";
 		if (!song.Year.empty())       cmd << "-metadata date=\"" << song.Year << "\" ";
 		if (!song.Copyright.empty())  cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
-		if (!song.Comment.empty())   cmd << "-metadata comment=\"" << song.Comment << "\" ";
+		if (!song.Comment.empty())    cmd << "-metadata comment=\"" << song.Comment << "\" ";
 		cmd << "-metadata encoder-info=\"Daniel's Mastering Utility\" ";
 		if (!song.Codec.empty())      cmd << "-c:a \"" << song.Codec << "\" ";
 
-		// Add custom arguments BEFORE track metadata and output file
-		// This ensures they can't overwrite critical output parameters
 		if (!song.arguments.empty())  cmd << song.arguments << " ";
 
 		cmd << "-metadata track=\"" << song.TrackNumber << "\" "
@@ -434,7 +447,8 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 #else
 			std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), (int(*)(FILE*))pclose);
 #endif
-			if (!pipe) {
+			if (!pipe) 
+			{
 				std::cerr << "  Failed to open pipe for command execution\n";
 				result = -1;
 				continue;
@@ -445,10 +459,11 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 			while (fgets(buffer, sizeof(buffer), pipe.get()))
 				output += buffer;
 
-			result = 0; // Assume success if pipe closes normally
-
+			result = 0;
+			
 			if (result == 0) { std::cout << "  Success!" << std::endl; break; }
-			else {
+			else 
+			{
 				std::cerr << "  ffmpeg failed with code: " << result << std::endl;
 				std::cerr << output;
 				if (attempt < 3) std::cerr << "  Retrying...\n";
