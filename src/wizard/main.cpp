@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @brief Mastering Utility Wizard
+ * @brief Mastering Utility Wizard / Editor
  * @author Daniel McGuire
  */
 
@@ -156,86 +156,160 @@ namespace MasteringWizard
 
 
 	/**
-	 * @brief Interactively collects album and song metadata from the user.
+	 * @brief Interactively collects or edits album and song metadata from the user.
 	 *
-	 * This function runs the full wizard flow, prompting the user for album data,
-	 * song data, and song inclusion preferences. It may preview content and allow
-	 * the user to reject or auto-accept songs. When fMarkupshed, the resulting list
-	 * of albums is returned through the output parameter.
+	 * This function runs the full wizard flow, prioritizing editing existing data.
+	 * It uses temporary std::string variables for all path fields to ensure
+	 * compatibility with DConsole::prompt, converting to/from std::filesystem::path.
 	 *
-	 * @param[out] albums Container that will receive the completed album structures.
+	 * @param[in,out] albums Container with existing (or empty) album structures.
 	 * @throws std::runtime_error on invalid input or unexpected user responses.
 	 */
-	void collectAlbumsInteractively(MasteringUtility::Albums& albums) 
+	void collectAlbumsInteractively(MasteringUtility::Albums& albums)
 	{
-		int albumCount = 1;
-		DConsole::prompt("Enter number of albums to create", albumCount, "Must be a positive integer.", &albumCount);
-		if (albumCount < 1)
+		const int initialAlbumCount = albums.size();
+		int albumCount = initialAlbumCount;
+
+		if (initialAlbumCount > 0)
 		{
-			albumCount = 1;
+			std::cout << "\nMarkup file contains " << initialAlbumCount << " album(s).\n";
+			DConsole::prompt("Enter the total number of albums to process",
+				albumCount, "Must be a positive integer.", &albumCount);
+		}
+		else
+		{
+			DConsole::prompt("Enter number of albums to create", albumCount,
+				"Must be a positive integer.", &albumCount);
 		}
 
-		for (int i = 0; i < albumCount; ++i)
+		if (albumCount < 0) {
+			std::cout << "Skipping album collection/editing.\n";
+			return;
+		}
+
+		const std::string defaultPathStr = ".";
+		const std::string defaultComment = " ";
+		const std::string defaultCopyright = " ";
+		const std::string defaultArgs = " ";
+		const std::string defaultCodec = "copy";
+
+		for (int i = 0; i < initialAlbumCount; ++i)
 		{
-			MasteringUtility::Album album;
-			album.Path = ".";
-			album.ID = i + 1;
-			album.Comment = " ";
-			std::string defaultCopyright = " ";
-			std::string defaultArgs = " ";
+			MasteringUtility::Album& album = albums[i];
+			std::cout << "\n\n=== Editing Existing Album " << (i + 1) << "/" << initialAlbumCount << ": " << album.Title << " ===\n";
+			MasteringWizard::preview::album(album);
 
-			DConsole::prompt("Enter Album Title", album.Title, "Album title cannot be empty.");
-			DConsole::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.");
-			DConsole::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.");
-			DConsole::prompt("Enter Album Year", album.Year, "Album year cannot be empty.");
-			DConsole::prompt("Enter Album Copyright Info", album.Copyright, "Unexpected issue", &defaultCopyright);
-			DConsole::prompt("Enter Relative Path to save songs", album.NewPath, "Album save path cannot be empty.");
-			DConsole::prompt("Enter Relative Path to Album Art", album.AlbumArt, "Album art path cannot be empty.");
-			DConsole::prompt("Enter additional arguments for FFMPEG (if any)", album.arguments, "Unexpected issue", &defaultArgs);
+			if (album.ID == 0) album.ID = i + 1;
 
-			int songCount = 0;
-			DConsole::prompt("How many songs in \"" + album.Title + "\"?", songCount, "Must be 0 or a positive integer.", &songCount);
+			DConsole::prompt("Enter Album Title", album.Title, "Album title cannot be empty.", &album.Title);
+			DConsole::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.", &album.Artist);
+			DConsole::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.", &album.Genre);
+			DConsole::prompt("Enter Album Year", album.Year, "Album year cannot be empty.", &album.Year);
+
+			const std::string* albumCopyrightPtr = album.Copyright.empty() ? &defaultCopyright : &album.Copyright;
+			DConsole::prompt("Enter Album Copyright Info", album.Copyright, "Unexpected issue", albumCopyrightPtr);
+
+
+			std::string albumNewPathStr = album.NewPath.string();
+			const std::string* albumNewPathPtr = albumNewPathStr.empty() ? &defaultPathStr : &albumNewPathStr;
+			DConsole::prompt("Enter Relative Path to save songs", albumNewPathStr, "Album save path cannot be empty.", albumNewPathPtr);
+			album.NewPath = albumNewPathStr;
+
+			std::string albumAlbumArtStr = album.AlbumArt.string();
+			const std::string* albumAlbumArtPtr = albumAlbumArtStr.empty() ? &defaultPathStr : &albumAlbumArtStr;
+			DConsole::prompt("Enter Relative Path to Album Art", albumAlbumArtStr, "Album art path cannot be empty.", albumAlbumArtPtr);
+			album.AlbumArt = albumAlbumArtStr;
+
+			const std::string* albumArgsPtr = album.arguments.empty() ? &defaultArgs : &album.arguments;
+			DConsole::prompt("Enter additional arguments for FFMPEG (if any)", album.arguments, "Unexpected issue", albumArgsPtr);
+
+
+			const int initialSongCount = album.SongsList.size();
+			int songCount = initialSongCount;
+			std::cout << "\nAlbum \"" << album.Title << "\" currently has " << initialSongCount << " song(s).\n";
+
+			DConsole::prompt("Enter the total number of songs to process in \"" + album.Title + "\"",
+				songCount, "Must be 0 or a positive integer.", &songCount);
+
 			if (songCount < 0) throw std::runtime_error("Song count cannot be negative.");
 
-			for (int j = 0; j < songCount; ++j)
+			for (int j = 0; j < initialSongCount; ++j)
+			{
+				MasteringUtility::Song& song = album.SongsList[j];
+				std::cout << "\n--- Editing Existing Song " << (j + 1) << "/" << initialSongCount << ": " << song.Title << " ---\n";
+				MasteringWizard::preview::song(song, false);
+
+				if (song.ID == 0) song.ID = j + 1;
+				if (song.Album.empty()) song.Album = album.Title;
+
+				std::string songPathStr = song.Path.string();
+				const std::string* songPathPtr = songPathStr.empty() ? &defaultPathStr : &songPathStr;
+				DConsole::prompt("Enter Song Source Filename", songPathStr, "Song source filename cannot be empty.", songPathPtr);
+				song.Path = songPathStr;
+				DConsole::prompt("Enter Song Title", song.Title, "Song title cannot be empty.", &song.Title);
+				const std::string* songArtistPtr = song.Artist.empty() ? &album.Artist : &song.Artist;
+				DConsole::prompt("Enter Song Artist", song.Artist, "Unexpected issue", songArtistPtr);
+				const std::string* songGenrePtr = song.Genre.empty() ? &album.Genre : &song.Genre;
+				DConsole::prompt("Enter Song Genre", song.Genre, "Unexpected issue", songGenrePtr);
+				const std::string* songYearPtr = song.Year.empty() ? &album.Year : &song.Year;
+				DConsole::prompt("Enter Song Year", song.Year, "Unexpected issue", songYearPtr);
+				const std::string* songCopyrightPtr = song.Copyright.empty() ? &album.Copyright : &song.Copyright;
+				DConsole::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", songCopyrightPtr);
+				std::string songNewPathStr = song.NewPath.string();
+				const std::string* songNewPathPtr = songNewPathStr.empty() ? &defaultPathStr : &songNewPathStr;
+				DConsole::prompt("Enter New Filename", songNewPathStr, "New filename cannot be empty.", songNewPathPtr);
+				song.NewPath = songNewPathStr;
+				const std::string* songCodecPtr = song.Codec.empty() ? &defaultCodec : &song.Codec;
+				DConsole::prompt("Enter Song Codec (mp3, flac, etc.)", song.Codec, "Unexpected issue", songCodecPtr);
+
+				const std::string* songArgsPtr = song.arguments.empty() ? &defaultArgs : &song.arguments;
+				DConsole::prompt("Enter additional arguments for FFMPEG (if any)", song.arguments, "Unexpected issue", songArgsPtr);
+			}
+
+			for (int j = initialSongCount; j < songCount; ++j)
 			{
 				MasteringUtility::Song song;
+				std::cout << "\n--- Adding New Song " << (j + 1) << " to album " << album.Title << " ---\n";
+
 				song.TrackNumber = j + 1;
-				song.Path = ".";
 				song.ID = j + 1;
 				song.Album = album.Title;
-				song.Comment = " ";
-				std::string defaultCodec = "copy";
 
-				DConsole::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
+				std::string songPathStr = defaultPathStr;
+				DConsole::prompt("Enter Song Source Filename", songPathStr, "Song source filename cannot be empty.", &defaultPathStr);
+				song.Path = songPathStr;
+
 				DConsole::prompt("Enter Song Title", song.Title, "Song title cannot be empty.");
 				DConsole::prompt("Enter Song Artist", song.Artist, "Unexpected issue", &album.Artist);
 				DConsole::prompt("Enter Song Genre", song.Genre, "Unexpected issue", &album.Genre);
 				DConsole::prompt("Enter Song Year", song.Year, "Unexpected issue", &album.Year);
 				DConsole::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", &album.Copyright);
-				DConsole::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
+
+				std::string songNewPathStr;
+				DConsole::prompt("Enter New Filename", songNewPathStr, "New filename cannot be empty.", &defaultPathStr);
+				song.NewPath = songNewPathStr;
+
 				DConsole::prompt("Enter Song Codec (mp3, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
 				DConsole::prompt("Enter additional arguments for FFMPEG (if any)", song.arguments, "Unexpected issue", &defaultArgs);
-				
+
 				MasteringWizard::preview::song(song);
 				bool addSong = g_AutoAddSongs;
 				if (!addSong) {
 					char response = '\0';
-					while (response != 'y' && response != 'n' && response != 'a') 
+					while (response != 'y' && response != 'n' && response != 'a')
 						DConsole::prompt("Would you like to add this song to the list? (y/n/a)", response, "Please enter 'y', 'n', or 'a'.");
+
 					switch (response) {
 					case 'a':
 						g_AutoAddSongs = true;
 						[[fallthrough]];
 					case 'y':
 						addSong = true;
-						[[fallthrough]];
+						break;
 					case 'n':
 						break;
-						unreachable();
 					default:
 						throw std::runtime_error("Unexpected response.");
-						unreachable();
 					}
 				}
 				if (addSong)
@@ -243,10 +317,103 @@ namespace MasteringWizard
 					album.SongsList.push_back(song);
 				}
 			}
-		
+
+			MasteringWizard::preview::album(album);
+			char keepAlbumResponse = 'Y';
+			DConsole::prompt("Would you like to keep the current data for album \"" + album.Title + "\"? (y/n)",
+				keepAlbumResponse, "Please enter 'y' or 'n'.", &keepAlbumResponse);
+
+			if (keepAlbumResponse == 'n' || keepAlbumResponse == 'N')
+			{
+				std::cout << "Data for \"" << album.Title << "\" will be kept for now. Run the wizard again to remove it.\n";
+			}
+		}
+
+		for (int i = initialAlbumCount; i < albumCount; ++i)
+		{
+			std::cout << "\n\n=== Adding New Album " << (i + 1) << " of " << albumCount << " ===\n";
+			MasteringUtility::Album album;
+
+			album.ID = i + 1;
+			album.Comment = defaultComment;
+
+			DConsole::prompt("Enter Album Title", album.Title, "Album title cannot be empty.");
+			DConsole::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.");
+			DConsole::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.");
+			DConsole::prompt("Enter Album Year", album.Year, "Album year cannot be empty.");
+			DConsole::prompt("Enter Album Copyright Info", album.Copyright, "Unexpected issue", &defaultCopyright);
+
+			std::string albumNewPathStr = defaultPathStr;
+			DConsole::prompt("Enter Relative Path to save songs", albumNewPathStr, "Album save path cannot be empty.", &defaultPathStr);
+			album.NewPath = albumNewPathStr;
+
+			std::string albumAlbumArtStr;
+			DConsole::prompt("Enter Relative Path to Album Art", albumAlbumArtStr, "Album art path cannot be empty.", &defaultPathStr);
+			album.AlbumArt = albumAlbumArtStr;
+
+			DConsole::prompt("Enter additional arguments for FFMPEG (if any)", album.arguments, "Unexpected issue", &defaultArgs);
+
+			int songCount = 0;
+			DConsole::prompt("How many songs in \"" + album.Title + "\"?", songCount, "Must be 0 or a positive integer.", &songCount);
+			if (songCount < 0) throw std::runtime_error("Song count cannot be negative.");
+
+			// Loop to Add New Songs for a New Album
+			for (int j = 0; j < songCount; ++j)
+			{
+				MasteringUtility::Song song;
+				std::cout << "\n--- Adding New Song " << (j + 1) << " ---\n";
+
+				song.TrackNumber = j + 1;
+				song.ID = j + 1;
+				song.Album = album.Title;
+				song.Comment = defaultComment;
+
+				std::string songPathStr = defaultPathStr;
+				DConsole::prompt("Enter Song Source Filename", songPathStr, "Song source filename cannot be empty.", &defaultPathStr);
+				song.Path = songPathStr;
+
+				DConsole::prompt("Enter Song Title", song.Title, "Song title cannot be empty.");
+				DConsole::prompt("Enter Song Artist", song.Artist, "Unexpected issue", &album.Artist);
+				DConsole::prompt("Enter Song Genre", song.Genre, "Unexpected issue", &album.Genre);
+				DConsole::prompt("Enter Song Year", song.Year, "Unexpected issue", &album.Year);
+				DConsole::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", &album.Copyright);
+
+				std::string songNewPathStr;
+				DConsole::prompt("Enter New Filename", songNewPathStr, "New filename cannot be empty.", &defaultPathStr);
+				song.NewPath = songNewPathStr;
+
+				DConsole::prompt("Enter Song Codec (mp3, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
+				DConsole::prompt("Enter additional arguments for FFMPEG (if any)", song.arguments, "Unexpected issue", &defaultArgs);
+
+				MasteringWizard::preview::song(song);
+				bool addSong = g_AutoAddSongs;
+				if (!addSong) {
+					char response = '\0';
+					while (response != 'y' && response != 'n' && response != 'a')
+						DConsole::prompt("Would you like to add this song to the list? (y/n/a)", response, "Please enter 'y', 'n', or 'a'.");
+
+					switch (response) {
+					case 'a':
+						g_AutoAddSongs = true;
+						[[fallthrough]];
+					case 'y':
+						addSong = true;
+						break;
+					case 'n':
+						break;
+					default:
+						throw std::runtime_error("Unexpected response.");
+					}
+				}
+				if (addSong)
+				{
+					album.SongsList.push_back(song);
+				}
+			}
+
 			MasteringWizard::preview::album(album);
 			char addAlbumResponse = 'Y';
-			DConsole::prompt("Would you like to add this album to the list? (y/n)", addAlbumResponse, "Please enter 'y' or 'n'.", &addAlbumResponse);
+			DConsole::prompt("Would you like to add this new album to the list? (y/n)", addAlbumResponse, "Please enter 'y' or 'n'.", &addAlbumResponse);
 			if (addAlbumResponse == 'y' || addAlbumResponse == 'Y')
 			{
 				albums.push_back(album);
@@ -314,6 +481,7 @@ int main(int argc, char** argv)
 
 	try
 	{
+		if (std::filesystem::exists(markupPath)) masterer.ParseMarkup(markupPath, albums);
 		MasteringWizard::collectAlbumsInteractively(albums);
 
 		if (albums.empty())
