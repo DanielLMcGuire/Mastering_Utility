@@ -53,7 +53,7 @@ cmake --build build --target build_all
 
 ### 1. Mastering Wizard (`masteringwizard`)
 
-Interactive Markup creator.
+Interactive Markup creator / editor.
 
 ```bash
 # Create new configuration
