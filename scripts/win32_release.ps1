@@ -21,7 +21,7 @@ try {
     Write-Host "Generated." -ForegroundColor Green
 
     Write-Host "Building..." -ForegroundColor Cyan
-    cmake --build ..\build --config Release --target build_all
+    cmake --build ..\build --config Release
     if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
     Write-Host "Built" -ForegroundColor Green
 

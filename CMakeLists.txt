@@ -174,17 +174,6 @@ add_custom_command(
 add_custom_target(build_msi ALL
     DEPENDS "${MSI_FILE}"
 )
-endif()
-
-add_custom_target(build_all)
-add_dependencies(build_all 
-	masteringutil_wizard 
-	masteringutil_tests 
-	masteringutil_launcher
-)
-
-if(WIN32)
-add_dependencies(build_all build_msi)
 
 add_custom_target(install_msi
     COMMAND ${CMAKE_COMMAND} -E sleep 1
