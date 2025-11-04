@@ -1,6 +1,6 @@
 # Mastering Utility
 
-[![CMake Multi-Platform Build](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml/badge.svg?branch=master&event=push)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
+[![CMake Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
 
 C++ 20 library for audio tagging using a metadata markup format and a Wizard to aid in creating the format.
 Includes a C++ tagging API (GPL 3.0) and an Console handling library (MIT).
