@@ -180,15 +180,18 @@ namespace MasteringWizard
 			MasteringUtility::Album album;
 			album.Path = ".";
 			album.ID = i + 1;
-			std::string defaultCopyright = "N/A";
+			album.Comment = " ";
+			std::string defaultCopyright = " ";
+			std::string defaultArgs = " ";
 
 			DConsole::prompt("Enter Album Title", album.Title, "Album title cannot be empty.");
 			DConsole::prompt("Enter Album Artist", album.Artist, "Album artist cannot be empty.");
 			DConsole::prompt("Enter Album Genre", album.Genre, "Album genre cannot be empty.");
 			DConsole::prompt("Enter Album Year", album.Year, "Album year cannot be empty.");
-			DConsole::prompt("Enter Album Copyright Info", album.Copyright, "Album copyright cannot be empty.", &defaultCopyright);
+			DConsole::prompt("Enter Album Copyright Info", album.Copyright, "Unexpected issue", &defaultCopyright);
 			DConsole::prompt("Enter Relative Path to save songs", album.NewPath, "Album save path cannot be empty.");
 			DConsole::prompt("Enter Relative Path to Album Art", album.AlbumArt, "Album art path cannot be empty.");
+			DConsole::prompt("Enter additional arguments for FFMPEG (if any)", album.arguments, "Unexpected issue", &defaultArgs);
 
 			int songCount = 0;
 			DConsole::prompt("How many songs in \"" + album.Title + "\"?", songCount, "Must be 0 or a positive integer.", &songCount);
@@ -201,6 +204,7 @@ namespace MasteringWizard
 				song.Path = ".";
 				song.ID = j + 1;
 				song.Album = album.Title;
+				song.Comment = " ";
 				std::string defaultCodec = "copy";
 
 				DConsole::prompt("Enter Song Source Filename", song.Path, "Song source filename cannot be empty.");
@@ -211,24 +215,24 @@ namespace MasteringWizard
 				DConsole::prompt("Enter Song Copyright Info", song.Copyright, "Unexpected issue", &album.Copyright);
 				DConsole::prompt("Enter New Filename", song.NewPath, "New filename cannot be empty.");
 				DConsole::prompt("Enter Song Codec (mp3, flac, etc.)", song.Codec, "Unexpected issue", &defaultCodec);
+				DConsole::prompt("Enter additional arguments for FFMPEG (if any)", song.arguments, "Unexpected issue", &defaultArgs);
 				
 				MasteringWizard::preview::song(song);
 				bool addSong = g_AutoAddSongs;
 				if (!addSong) {
 					char response = '\0';
 					while (response != 'y' && response != 'n' && response != 'a') 
-					{ 
-					DConsole::prompt("Would you like to add this song to the list? (y/n/a)", response, "Please enter 'y', 'n', or 'a'.");
-					}
+						DConsole::prompt("Would you like to add this song to the list? (y/n/a)", response, "Please enter 'y', 'n', or 'a'.");
 					switch (response) {
 					case 'a':
 						g_AutoAddSongs = true;
 						[[fallthrough]];
 					case 'y':
 						addSong = true;
-						break;
+						[[fallthrough]];
 					case 'n':
 						break;
+						unreachable();
 					default:
 						throw std::runtime_error("Unexpected response.");
 						unreachable();
