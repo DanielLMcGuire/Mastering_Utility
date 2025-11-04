@@ -190,7 +190,9 @@ static std::vector<std::string> splitArgs(const std::string& input)
   */
 static std::string sanitizeArguments(const std::string& args)
 {
+#ifdef _DEBUG
 	std::cout << "Specified: " << args << '\n';
+#endif 
 	if (args.empty()) return args;
 
 	std::string sanitized = trim(args);
@@ -226,7 +228,9 @@ static std::string sanitizeArguments(const std::string& args)
 			<< "Adding prefix.\n";
 		sanitized = "- " + sanitized; 
 	}
+#ifdef _DEBUG
 	std::cout << "Cleaned: " << args << '\n';
+#endif
 	return sanitized;
 }
 
