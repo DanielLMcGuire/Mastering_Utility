@@ -102,7 +102,7 @@ void DConsole::parse(int argc, char** argv)
 			}
 			else
 			{
-			std::cerr << "Unknown argument: --" << longKey << "\n";
+				if (!supressUnknownArgument) std::cerr << "Unknown argument: --" << longKey << "\n";
 			}
 		}
 		else if (arg[0] == '-' && arg[1] != '\0') 
@@ -136,7 +136,7 @@ void DConsole::parse(int argc, char** argv)
 		}
 		else
 		{
-			std::cerr << "Unknown argument format: " << arg << "\n";
+			if (!supressUnknownArgument) std::cerr << "Unknown argument format: " << arg << "\n";
 		}
 	}
 }

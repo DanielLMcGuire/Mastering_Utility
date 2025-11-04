@@ -51,6 +51,7 @@ int main( int argc, char* argv[] )
 	MasteringUtility masterer;
 
 	DConsole conlib;
+	conlib.supressUnknownArgument = true;
 	conlib.registerArg("help", DConsole::ArgType::Bool, 'h');
 	conlib.registerArg("markupfile", DConsole::ArgType::String, 'f');
 

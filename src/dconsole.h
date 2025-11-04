@@ -131,6 +131,11 @@ public:
 	 * @return The value of the argument
 	 */
 	char f_char(const std::string& longName, char defaultVal = '\0') const;
+	
+	/**
+	 * @brief Allow "Unknown argument format:" message to print
+	 */
+	bool supressUnknownArgument = false;
 
 private:
 	/**
