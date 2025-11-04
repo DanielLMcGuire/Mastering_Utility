@@ -28,6 +28,23 @@
 #include <random>
 #include <string>
 
+#ifdef _MSC_VER
+#pragma warning(disable: 4834)
+#endif
+
+/** @brief Indicate unreachable code
+ *
+ * Uses compiler-specific intrinsics to inform the optimizer that this code path is unreachable.
+ */
+[[noreturn]] inline void unreachable()
+{
+#if defined(_MSC_VER) && !defined(__clang__) // MSVC
+	__assume(false);
+#else // GCC, Clang
+	__builtin_unreachable();
+#endif
+}
+
 /**
  * @brief Generates a random string
  * @param length Length of string
@@ -78,9 +95,7 @@ int main(int argc, char** argv) {
 		std::ofstream{outFile};
 	}
 
-
 	MasteringUtility masterer;
-
 	MasteringUtility::Albums albums;
 
 	MasteringUtility::Album album1;
@@ -222,10 +237,13 @@ int main(int argc, char** argv) {
 		conlib.printColorText("PASS: ", ANSIColorGreen);
 		std::cout << "All metadata matched successfully in " << elapsed.count() << " seconds.\n";
 		return 0;
+		unreachable();
 	}
 	else {
 		conlib.printColorText("FAIL: ", ANSIColorRed);
 		std::cerr << "Metadata mismatch detected!\n";
 		return 1;
+		unreachable();
 	}
+	unreachable();
 }

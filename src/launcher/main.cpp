@@ -25,6 +25,24 @@
 #include <iostream>
 #include <string>
 
+
+#ifdef _MSC_VER
+#pragma warning(disable: 4834)
+#endif
+
+/** @brief Indicate unreachable code
+ *
+ * Uses compiler-specific intrinsics to inform the optimizer that this code path is unreachable.
+ */
+[[noreturn]] inline void unreachable()
+{
+#if defined(_MSC_VER) && !defined(__clang__) // MSVC
+	__assume(false);
+#else // GCC, Clang
+	__builtin_unreachable();
+#endif
+}
+
 /// @brief CRT Entry Point
 int main( int argc, char* argv[] )
 {
@@ -55,12 +73,13 @@ int main( int argc, char* argv[] )
 	{
 		std::cerr << "Error during mastering: " << ex.what() << "\n";
 		return 1;
+		unreachable();
 	}
 	catch ( ... )
 	{
 		std::cerr << "Unknown error during mastering.\n";
 		return -1;
+		unreachable();
 	}
-
 	return 0;
 }
