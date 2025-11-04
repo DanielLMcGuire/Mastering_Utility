@@ -31,6 +31,29 @@
 #include <memory>     
 #include <string>
 #include <regex>
+#include <iomanip>
+
+/**
+ * @brief Grab file modifed information
+ * @param filePath File
+ * @returns information 
+ */
+static std::string calculateFileHash(const std::filesystem::path& filePath) {
+	if (!std::filesystem::exists(filePath)) return "";
+
+	std::error_code ec;
+	auto fileSize = std::filesystem::file_size(filePath, ec);
+	if (ec) return "";
+
+	auto ftime = std::filesystem::last_write_time(filePath, ec);
+	if (ec) return "";
+
+	/// @TODO Implement an actual hashing function
+	std::stringstream ss;
+	ss << std::hex << std::setw(8) << std::setfill('0') << fileSize
+		<< std::hex << std::setw(16) << std::setfill('0') << ftime.time_since_epoch().count();
+	return ss.str();
+}
 
 /**
  * @brief Get Audio Codecs
@@ -317,7 +340,7 @@ void MasteringUtility::SaveMarkup(const Albums& albums, const std::filesystem::p
 			std::cerr << "[SaveMarkup] Could not open output Markup file: " << markupFile << std::endl;
 			return;
 		}
-
+		file << "; Mastering Utility\n";
 		for (const auto& album : albums) {
 			file << "album " << album.ID << " ("
 				<< "\"" << cleanString(album.Title) << "\", "
@@ -407,6 +430,17 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 {
 	try
 	{
+		std::string currentHash = calculateFileHash(song.Path);
+		auto cacheIt = std::find_if(m_songCache.begin(), m_songCache.end(),
+			[&song](const SongCacheEntry& entry) {
+				return entry.ID == song.ID && entry.Path == song.Path;
+			});
+		if (cacheIt != m_songCache.end() && cacheIt->Hash == currentHash)
+		{
+			std::cout << "Skipping: " << song.Title << " (File hash matches cache)\n";
+			return;
+		}
+
 		std::unordered_set<std::string> audioCodecs = getAudioCodecs();
 		if (!audioCodecs.contains(trim(song.Codec))) throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
 		if (!std::filesystem::exists(song.Path)) throw std::runtime_error("File not found: " + song.Path.string());
@@ -464,12 +498,20 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 
 			result = 0;
 			
-			if (result == 0) { std::cout << "  Success!" << std::endl; break; }
-			else 
+			if (result == 0)
 			{
-				std::cerr << "  ffmpeg failed with code: " << result << std::endl;
-				std::cerr << output;
-				if (attempt < 3) std::cerr << "  Retrying...\n";
+				std::cout << "  Success!" << std::endl;
+
+				if (cacheIt != m_songCache.end())
+				{
+					cacheIt->Hash = currentHash;
+				}
+				else
+				{
+					SongCacheEntry newEntry = { song.ID, song.Path, currentHash };
+					m_songCache.push_back(newEntry);
+				}
+				break;
 			}
 		}
 
@@ -488,8 +530,70 @@ void MasteringUtility::Master(const std::filesystem::path& markupFile)
 		ParseMarkup(markupFile, albums);
 
 		for (const auto& album : albums)
-			ProcessAlbum(album);
+		{ 
+			loadCache(markupFile);
+			ProcessAlbum(album);	
+			saveCache(markupFile);
+		}
 	}
 	catch (const std::exception& ex) { std::cerr << "[Master] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[Master] Unknown exception" << std::endl; }
+}
+
+std::filesystem::path MasteringUtility::getCacheFilePath(const std::filesystem::path& markupFile) const
+{
+	std::string filename = markupFile.stem().string() + ".cache";
+	return markupFile.parent_path() / filename;
+}
+
+void MasteringUtility::loadCache(const std::filesystem::path& markupFile)
+{
+	m_songCache.clear();
+	std::filesystem::path cachePath = getCacheFilePath(markupFile);
+
+	std::ifstream cacheFile(cachePath);
+	if (!cacheFile.is_open()) return; 
+
+	std::string line;
+	while (std::getline(cacheFile, line))
+	{
+		line = trim(line);
+		if (line.empty() || line[0] == ';') continue;
+
+		std::stringstream ss(line);
+		std::string segment;
+		std::vector<std::string> parts;
+
+		while (std::getline(ss, segment, ',')) parts.push_back(trim(segment));
+
+		if (parts.size() == 3)
+		{
+			SongCacheEntry entry;
+			try { entry.ID = std::stoi(parts[0]); }
+			catch (...) { continue; }
+			entry.Path = parts[1];
+			entry.Hash = parts[2];
+			m_songCache.push_back(entry);
+		}
+	}
+}
+
+void MasteringUtility::saveCache(const std::filesystem::path& markupFile) const
+{
+	std::filesystem::path cachePath = getCacheFilePath(markupFile);
+	std::ofstream cacheFile(cachePath);
+
+	if (!cacheFile.is_open()) {
+		std::cerr << "[SaveCache] Could not open cache file for writing: " << cachePath << std::endl;
+		return;
+	}
+
+	cacheFile << "; Mastering Utility Cache File\n";
+	cacheFile << "; Format: ID, InputPath, FileHash\n";
+
+	for (const auto& entry : m_songCache) {
+		cacheFile << entry.ID << ", "
+			<< entry.Path.string() << ", "
+			<< entry.Hash << "\n";
+	}
 }

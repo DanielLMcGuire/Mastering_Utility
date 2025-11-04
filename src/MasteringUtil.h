@@ -163,4 +163,34 @@ public:
 	 * @param album Parent album of song
 	 */
 	void ProcessSong(const Song& song, const Album& album);
+
+	/// @brief Song Cache Entry
+	class SongCacheEntry
+	{
+	public:
+		/// @brief Song's unique ID
+		int ID{};
+		/// @brief Input File Path
+		std::filesystem::path Path;
+		/// @brief CRC32 Hash of the input file
+		std::string Hash;
+
+		/// @brief Equality operator for SongCacheEntry
+		bool operator==(const SongCacheEntry& other) const {
+			return ID == other.ID &&
+				Path == other.Path &&
+				Hash == other.Hash;
+		}
+	};
+
+private:
+	/// @brief Cache of processed songs: ID, Path, Hash
+	using SongCache = std::vector<SongCacheEntry>;
+
+	SongCache m_songCache;
+
+	std::filesystem::path getCacheFilePath(const std::filesystem::path& markupFile) const;
+
+	void loadCache(const std::filesystem::path& markupFile);
+	void saveCache(const std::filesystem::path& markupFile) const;
 };
