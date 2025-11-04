@@ -64,6 +64,10 @@ if(USE_LLD)
 	endif()
 endif()
 
+if(NOT MSVC)
+    add_compile_definitions($<$<CONFIG:Debug>:_DEBUG>)
+endif()
+
 if(MSVC)
     add_compile_options(/EHsc)
 
