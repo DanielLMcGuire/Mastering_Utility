@@ -64,7 +64,7 @@ static std::unordered_set<std::string> getAudioCodecs() {
 
 	audioCodecs.insert("copy");
 	audioCodecs.insert("libmp3lame");
-	const char* cmd = "ffmpeg -codecs";
+	const char* cmd = "ffmpeg -loglevel error -codecs";
 
 #ifdef _WIN32
 	FILE* pipe = _popen(cmd, "r");
@@ -76,7 +76,7 @@ static std::unordered_set<std::string> getAudioCodecs() {
 		return audioCodecs;
 	}
 
-	std::array<char, 512> buffer;
+	std::array<char, 1024> buffer;
 	bool parsing = false;
 
 	while (fgets(buffer.data(), buffer.size(), pipe)) {
@@ -379,7 +379,7 @@ void MasteringUtility::SaveMarkup(const Albums& albums, const std::filesystem::p
 
 				if (!song.arguments.empty())
 				{ 
-					if (song.Comment.empty()) file << ". \" \"";
+					if (song.Comment.empty()) file << ", \" \"";
 					file << ", \"" << trim(song.arguments) << "\"";
 				}
 
@@ -407,7 +407,7 @@ void MasteringUtility::ProcessAlbum(const Album& album)
 		if (!album.NewPath.empty()) std::filesystem::create_directories(album.NewPath);
 
 			auto codec = album.SongsList[1].Codec;
-			if (codec == "wav" || codec == "WAV" || codec == "flac" || codec == "FLAC") 
+			if (codec == "wav" && codec == "WAV" && codec == "flac" && codec == "FLAC") 
 			{
 				std::filesystem::path source = album.Path / album.AlbumArt;
 				std::filesystem::path destination = album.NewPath / ("cover" + album.AlbumArt.extension().string());
@@ -445,8 +445,7 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 			return;
 		}
 
-		std::unordered_set<std::string> audioCodecs = getAudioCodecs();
-		if (!audioCodecs.contains(trim(song.Codec))) throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
+		if (!m_audioCodecs.contains(trim(song.Codec))) throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
 		if (!std::filesystem::exists(song.Path)) throw std::runtime_error("File not found: " + song.Path.string());
 		std::cout << "Encoding: " << song.Title
 			<< " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
@@ -455,11 +454,12 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		std::filesystem::create_directories(new_songPath.parent_path());
 
 		std::ostringstream cmd;
+		std::filesystem::path albumArt = album.Path / album.AlbumArt;
 		cmd << "ffmpeg -y "
 			<< "-i \"" << song.Path.string() << "\" ";
-		if (song.Codec != "flac" || song.Codec != "FLAC" || song.Codec != "wav" || song.Codec != "WAV")
+		if (song.Codec != "flac" && song.Codec != "FLAC" && song.Codec != "wav" && song.Codec != "WAV")
 			if (!song.Codec.empty() && !album.AlbumArt.empty())
-						cmd << "-i \"" << album.AlbumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
+				cmd << "-i \"" << albumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
 		if (!song.Title.empty())      cmd << "-metadata title=\"" << song.Title << "\" ";
 		if (!song.Artist.empty())     cmd << "-metadata artist=\"" << song.Artist << "\" ";
 		if (!song.Album.empty())      cmd << "-metadata album=\"" << song.Album << "\" ";
@@ -477,50 +477,34 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 			<< "\"" << new_songPath.string() << "\"";
 
 		std::string command = cmd.str();
-		int result = -1;
-
-		for (int attempt = 1; attempt <= 3; ++attempt)
-		{
-			std::cout << "  Running (attempt " << attempt << "): " << command << std::endl;
 
 #ifdef _WIN32
-			std::unique_ptr<FILE, int(*)(FILE*)> pipe(_popen(command.c_str(), "r"), _pclose);
+	command += " 2>&1 1>NUL"; 
+	std::unique_ptr<FILE, int(*)(FILE*)> pipe(_popen(command.c_str(), "r"), _pclose);
 #else
-			std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), (int(*)(FILE*))pclose);
+	command += " 2>&1 1>/dev/null"; 
+	std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), pclose);
 #endif
-			if (!pipe) 
-			{
-				std::cerr << "  Failed to open pipe for command execution\n";
-				result = -1;
-				continue;
-			}
-
-			std::string output;
-			char buffer[256];
-			while (fgets(buffer, sizeof(buffer), pipe.get()))
-				output += buffer;
-
-			result = 0;
-			
-			if (result == 0)
-			{
-				std::cout << "  Success!" << std::endl;
-
-				if (cacheIt != m_songCache.end())
-				{
-					cacheIt->Hash = currentHash;
-				}
-				else
-				{
-					SongCacheEntry newEntry = { compositeId, song.Path, currentHash };
-					m_songCache.push_back(newEntry);
-				}
-				break;
-			}
+		if (!pipe)
+		{
+			std::cerr << "  Failed to open pipe for command execution\n";
+			return;
 		}
 
-		if (result != 0)
-			std::cerr << "  Giving up on " << song.Title << " after 3 failed attempts\n";
+		std::string output;
+		char buffer[BUFFER_SIZE];
+		while (fgets(buffer, sizeof(buffer), pipe.get()))
+			output += buffer;
+
+		if (cacheIt != m_songCache.end())
+		{
+			cacheIt->Hash = currentHash;
+		}
+		else
+		{
+			SongCacheEntry newEntry = { compositeId, song.Path, currentHash };
+			m_songCache.push_back(newEntry);
+		}
 	}
 	catch (const std::exception& ex) { std::cerr << "[ProcessSong] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[ProcessSong] Unknown exception" << std::endl; }
@@ -530,16 +514,13 @@ void MasteringUtility::Master(const std::filesystem::path& markupFile)
 {
 	try
 	{
+		m_audioCodecs = getAudioCodecs();
 		Albums albums;
 		const std::filesystem::path oldDir = std::filesystem::current_path();
 		ParseMarkup(markupFile, albums);
-		
-		for (const auto& album : albums)
-		{ 
-			loadCache(markupFile);
-			ProcessAlbum(album);	
-			saveCache(albums, markupFile);
-		}
+		loadCache(markupFile);
+		for (const auto& album : albums) ProcessAlbum(album);	
+		saveCache(albums, markupFile);
 		std::filesystem::current_path(oldDir);
 	}
 	catch (const std::exception& ex) { std::cerr << "[Master] Exception: " << ex.what() << std::endl; }

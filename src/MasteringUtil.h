@@ -34,6 +34,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
  /// @brief  Mastering Utility
 class MasteringUtility
@@ -193,4 +194,7 @@ private:
 
 	void loadCache(const std::filesystem::path& markupFile);
 	void saveCache(const Albums& albums, const std::filesystem::path& markupFile) const;
+
+	std::unordered_set<std::string> m_audioCodecs;
+	static constexpr size_t BUFFER_SIZE = 1024;
 };
