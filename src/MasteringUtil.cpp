@@ -47,11 +47,10 @@ static std::string calculateFileHash(const std::filesystem::path& filePath) {
 
 	auto ftime = std::filesystem::last_write_time(filePath, ec);
 	if (ec) return "";
-
-	/// @TODO Implement an actual hashing function
 	std::stringstream ss;
 	ss << std::hex << std::setw(8) << std::setfill('0') << fileSize
-		<< std::hex << std::setw(16) << std::setfill('0') << ftime.time_since_epoch().count();
+		<< std::hex << std::setw(16) << std::setfill('0')
+		<< (unsigned long long)ftime.time_since_epoch().count();
 	return ss.str();
 }
 
