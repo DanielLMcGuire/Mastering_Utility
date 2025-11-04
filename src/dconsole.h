@@ -46,7 +46,8 @@ public:
 	/// @brief Initializer
 	DConsole();
 
-	/** @brief Prompt user for input with validation
+	/** 
+	 * @brief Prompt user for input with validation
 	 *
 	 * @tparam T Type of the input value
 	 * @param message Prompt message
