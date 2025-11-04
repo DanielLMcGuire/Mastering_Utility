@@ -320,41 +320,41 @@ void MasteringUtility::SaveMarkup(const Albums& albums, const std::filesystem::p
 
 		for (const auto& album : albums) {
 			file << "album " << album.ID << " ("
-				<< "\"" << album.Title << "\", "
-				<< "\"" << album.Artist << "\", "
-				<< "\"" << album.Copyright << "\", "
-				<< "\"" << album.AlbumArt << "\", "
-				<< "\"" << album.Path << "\", "
-				<< "\"" << album.NewPath << "\", "
-				<< "\"" << album.Genre << "\", "
-				<< "\"" << album.Year << "\"";
+				<< "\"" << cleanString(album.Title) << "\", "
+				<< "\"" << cleanString(album.Artist) << "\", "
+				<< "\"" << cleanString(album.Copyright) << "\", "
+				<< "\"" << cleanString(album.AlbumArt.string()) << "\", "
+				<< "\"" << cleanString(album.Path.string()) << "\", "
+				<< "\"" << cleanString(album.NewPath.string()) << "\", "
+				<< "\"" << cleanString(album.Genre) << "\", "
+				<< "\"" << cleanString(album.Year) << "\"";
 
 			if (!album.Comment.empty())
-				file << ", \"" << album.Comment << "\"";
+				file << ", \"" << cleanString(album.Comment) << "\"";
 
 			if (!album.arguments.empty())
-				file << ", \"" << album.arguments << "\"";
+				file << ", \"" << cleanString(album.arguments) << "\"";
 
 			file << ")\n{\n";
 
 			for (const auto& song : album.SongsList) {
 				file << "    song " << song.ID << " ("
-					<< "\"" << song.Title << "\", "
-					<< "\"" << song.Artist << "\", "
+					<< "\"" << cleanString(song.Title) << "\", "
+					<< "\"" << cleanString(song.Artist) << "\", "
 					<< song.TrackNumber << ", "
-					<< "\"" << song.Path << "\", "
-					<< "\"" << song.NewPath << "\", "
-					<< "\"" << song.Codec << "\", "
-					<< "\"" << song.Genre << "\", "
-					<< "\"" << song.Year << "\"";
+					<< "\"" << cleanString(song.Path.string()) << "\", "
+					<< "\"" << cleanString(song.NewPath.string()) << "\", "
+					<< "\"" << cleanString(song.Codec) << "\", "
+					<< "\"" << cleanString(song.Genre) << "\", "
+					<< "\"" << cleanString(song.Year) << "\"";
 
 				if (!song.Comment.empty())
-					file << ", \"" << song.Comment << "\"";
+					file << ", \"" << trim(song.Comment) << "\"";
 
 				if (!song.arguments.empty())
 				{ 
 					if (song.Comment.empty()) file << ". \" \"";
-					file << ", \"" << song.arguments << "\"";
+					file << ", \"" << trim(song.arguments) << "\"";
 				}
 
 				file << ")\n";
