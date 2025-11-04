@@ -407,7 +407,7 @@ void MasteringUtility::ProcessAlbum(const Album& album)
 		if (!album.NewPath.empty()) std::filesystem::create_directories(album.NewPath);
 
 			auto codec = album.SongsList[1].Codec;
-			if (codec == "wav" && codec == "WAV" && codec == "flac" && codec == "FLAC") 
+			if (codec == "wav" || codec == "WAV" || codec == "flac" || codec == "FLAC") 
 			{
 				std::filesystem::path source = album.Path / album.AlbumArt;
 				std::filesystem::path destination = album.NewPath / ("cover" + album.AlbumArt.extension().string());
