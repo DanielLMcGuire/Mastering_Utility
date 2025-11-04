@@ -423,7 +423,7 @@ void MasteringUtility::ProcessAlbum(const Album& album)
 				dest << src.rdbuf();
 			}
 
-		for (const auto& song : album.SongsList) ProcessSong(song, album);
+		for (const Song& song : album.SongsList) ProcessSong(song, album);
 	}
 	catch (const std::exception& ex) { std::cerr << "[ProcessAlbum] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[ProcessAlbum] Unknown exception" << std::endl; }
@@ -434,9 +434,10 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 	try
 	{
 		std::string currentHash = calculateFileHash(song.Path);
+		std::string compositeId = std::to_string(album.ID) + ":" + std::to_string(song.ID);
 		auto cacheIt = std::find_if(m_songCache.begin(), m_songCache.end(),
-			[&song](const SongCacheEntry& entry) {
-				return entry.ID == song.ID && entry.Path == song.Path;
+			[&compositeId, &song](const SongCacheEntry& entry) {
+				return entry.CompositeID == compositeId && entry.Path == song.Path;
 			});
 		if (cacheIt != m_songCache.end() && cacheIt->Hash == currentHash)
 		{
@@ -511,7 +512,7 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 				}
 				else
 				{
-					SongCacheEntry newEntry = { song.ID, song.Path, currentHash };
+					SongCacheEntry newEntry = { compositeId, song.Path, currentHash };
 					m_songCache.push_back(newEntry);
 				}
 				break;
@@ -530,14 +531,16 @@ void MasteringUtility::Master(const std::filesystem::path& markupFile)
 	try
 	{
 		Albums albums;
+		const std::filesystem::path oldDir = std::filesystem::current_path();
 		ParseMarkup(markupFile, albums);
-
+		
 		for (const auto& album : albums)
 		{ 
 			loadCache(markupFile);
 			ProcessAlbum(album);	
-			saveCache(markupFile);
+			saveCache(albums, markupFile);
 		}
+		std::filesystem::current_path(oldDir);
 	}
 	catch (const std::exception& ex) { std::cerr << "[Master] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[Master] Unknown exception" << std::endl; }
@@ -545,7 +548,7 @@ void MasteringUtility::Master(const std::filesystem::path& markupFile)
 
 std::filesystem::path MasteringUtility::getCacheFilePath(const std::filesystem::path& markupFile) const
 {
-	std::string filename = markupFile.stem().string() + ".cache";
+	std::string filename = markupFile.stem().string() + ".masc";
 	return markupFile.parent_path() / filename;
 }
 
@@ -555,7 +558,7 @@ void MasteringUtility::loadCache(const std::filesystem::path& markupFile)
 	std::filesystem::path cachePath = getCacheFilePath(markupFile);
 
 	std::ifstream cacheFile(cachePath);
-	if (!cacheFile.is_open()) return; 
+	if (!cacheFile.is_open()) return;
 
 	std::string line;
 	while (std::getline(cacheFile, line))
@@ -572,8 +575,7 @@ void MasteringUtility::loadCache(const std::filesystem::path& markupFile)
 		if (parts.size() == 3)
 		{
 			SongCacheEntry entry;
-			try { entry.ID = std::stoi(parts[0]); }
-			catch (...) { continue; }
+			entry.CompositeID = parts[0];
 			entry.Path = parts[1];
 			entry.Hash = parts[2];
 			m_songCache.push_back(entry);
@@ -581,7 +583,7 @@ void MasteringUtility::loadCache(const std::filesystem::path& markupFile)
 	}
 }
 
-void MasteringUtility::saveCache(const std::filesystem::path& markupFile) const
+void MasteringUtility::saveCache(const Albums& albums, const std::filesystem::path& markupFile) const
 {
 	std::filesystem::path cachePath = getCacheFilePath(markupFile);
 	std::ofstream cacheFile(cachePath);
@@ -592,10 +594,9 @@ void MasteringUtility::saveCache(const std::filesystem::path& markupFile) const
 	}
 
 	cacheFile << "; Mastering Utility Cache File\n";
-	cacheFile << "; Format: ID, InputPath, FileHash\n";
 
 	for (const auto& entry : m_songCache) {
-		cacheFile << entry.ID << ", "
+		cacheFile << entry.CompositeID << ", "
 			<< entry.Path.string() << ", "
 			<< entry.Hash << "\n";
 	}

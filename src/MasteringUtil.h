@@ -168,8 +168,8 @@ public:
 	class SongCacheEntry
 	{
 	public:
-		/// @brief Song's unique ID
-		int ID{};
+		/// @brief Composite ID: AlbumID:SongID
+		std::string CompositeID;
 		/// @brief Input File Path
 		std::filesystem::path Path;
 		/// @brief CRC32 Hash of the input file
@@ -177,7 +177,7 @@ public:
 
 		/// @brief Equality operator for SongCacheEntry
 		bool operator==(const SongCacheEntry& other) const {
-			return ID == other.ID &&
+			return CompositeID == other.CompositeID && // *** Check CompositeID ***
 				Path == other.Path &&
 				Hash == other.Hash;
 		}
@@ -192,5 +192,5 @@ private:
 	std::filesystem::path getCacheFilePath(const std::filesystem::path& markupFile) const;
 
 	void loadCache(const std::filesystem::path& markupFile);
-	void saveCache(const std::filesystem::path& markupFile) const;
+	void saveCache(const Albums& albums, const std::filesystem::path& markupFile) const;
 };
