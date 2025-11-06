@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 
  /// @brief  Mastering Utility
 class MasteringUtility
@@ -115,7 +116,7 @@ public:
 		bool operator==(const Album& other) const {
 			return Metadata::operator==(other) &&
 				AlbumArt == other.AlbumArt &&
-				SongsList == other.SongsList; 
+				SongsList == other.SongsList;
 		}
 	};
 
@@ -169,32 +170,43 @@ public:
 	class SongCacheEntry
 	{
 	public:
-		/// @brief Composite ID: AlbumID:SongID
-		std::string CompositeID;
+		/// @brief Song ID (without album prefix)
+		std::string SongID;
 		/// @brief Input File Path
 		std::filesystem::path Path;
-		/// @brief CRC32 Hash of the input file
+		/// @brief Hash of the input file
 		std::string Hash;
 
 		/// @brief Equality operator for SongCacheEntry
 		bool operator==(const SongCacheEntry& other) const {
-			return CompositeID == other.CompositeID && // *** Check CompositeID ***
+			return SongID == other.SongID &&
 				Path == other.Path &&
 				Hash == other.Hash;
 		}
 	};
 
+	/// @brief Album Cache Entry
+	class AlbumCacheEntry
+	{
+	public:
+		/// @brief Hash of the markup file
+		std::string MarkupHash;
+		/// @brief Song cache entries
+		std::vector<SongCacheEntry> Songs;
+	};
+
 private:
-	/// @brief Cache of processed songs: ID, Path, Hash
-	using SongCache = std::vector<SongCacheEntry>;
+	/// @brief Cache of processed albums: AlbumID -> AlbumCacheEntry
+	using AlbumCacheMap = std::unordered_map<int, AlbumCacheEntry>;
 
-	SongCache m_songCache;
+	AlbumCacheMap m_albumCaches;
 
-	std::filesystem::path getCacheFilePath(const std::filesystem::path& markupFile) const;
+	std::filesystem::path getCacheFilePath(const Album& album) const;
 
-	void loadCache(const std::filesystem::path& markupFile);
-	void saveCache(const Albums& albums, const std::filesystem::path& markupFile) const;
+	void loadCache(const Album& album);
+	void saveCache(const Album& album) const;
 
 	std::unordered_set<std::string> m_audioCodecs;
+	std::filesystem::path m_markupFile;
 	static constexpr size_t BUFFER_SIZE = 1024;
 };

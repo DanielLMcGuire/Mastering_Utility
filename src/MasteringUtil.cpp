@@ -36,7 +36,7 @@
 /**
  * @brief Grab file modifed information
  * @param filePath File
- * @returns information 
+ * @returns information
  */
 static std::string calculateFileHash(const std::filesystem::path& filePath) {
 	if (!std::filesystem::exists(filePath)) return "";
@@ -197,17 +197,16 @@ static std::string sanitizeArguments(const std::string& args)
 
 	std::string sanitized = trim(args);
 
-	// List of dangerous patterns that could overwrite critical parameters
 	std::vector<std::string> dangerousPatterns = {
-		"-i ", "--input",           
-		"ffmpeg", "ffprobe",        
-		"-metadata",                
-		"-c:a", "-codec:a",         
-		"-map",                    
-		"&&", "||", "|", ";",      
-		"$(", "`",                 
-		">", "<", ">>",             
-		"-y", "-n"                 
+		"-i ", "--input",
+		"ffmpeg", "ffprobe",
+		"-metadata",
+		"-c:a", "-codec:a",
+		"-map",
+		"&&", "||", "|", ";",
+		"$(", "`",
+		">", "<", ">>",
+		"-y", "-n"
 	};
 
 	std::string lower = sanitized;
@@ -226,7 +225,7 @@ static std::string sanitizeArguments(const std::string& args)
 	if (!sanitized.empty() && sanitized[0] != '-') {
 		std::cerr << "[sanitizeArguments] Warning: Arguments must start with '-'. "
 			<< "Adding prefix.\n";
-		sanitized = "- " + sanitized; 
+		sanitized = "- " + sanitized;
 	}
 #ifdef _DEBUG
 	std::cout << "Cleaned: " << args << '\n';
@@ -378,7 +377,7 @@ void MasteringUtility::SaveMarkup(const Albums& albums, const std::filesystem::p
 					file << ", \"" << trim(song.Comment) << "\"";
 
 				if (!song.arguments.empty())
-				{ 
+				{
 					if (song.Comment.empty()) file << ", \" \"";
 					file << ", \"" << trim(song.arguments) << "\"";
 				}
@@ -406,24 +405,48 @@ void MasteringUtility::ProcessAlbum(const Album& album)
 
 		if (!album.NewPath.empty()) std::filesystem::create_directories(album.NewPath);
 
-			auto codec = album.SongsList[1].Codec;
-			if (codec == "wav" || codec == "WAV" || codec == "flac" || codec == "FLAC") 
+		auto codec = album.SongsList[1].Codec;
+		if (codec == "wav" || codec == "WAV" || codec == "flac" || codec == "FLAC")
+		{
+			std::filesystem::path source = album.Path / album.AlbumArt;
+			std::filesystem::path destination = album.NewPath / ("cover" + album.AlbumArt.extension().string());
+
+			std::ifstream src(source, std::ios::binary);
+			if (!src)
+				throw std::runtime_error("Failed to open source: " + source.string());
+
+			std::ofstream dest(destination, std::ios::binary);
+			if (!dest)
+				throw std::runtime_error("Failed to open destination: " + destination.string());
+
+			dest << src.rdbuf();
+		}
+
+		loadCache(album);
+
+		std::string currentMarkupHash = calculateFileHash(m_markupFile);
+		bool markupChanged = false;
+
+		auto cacheIt = m_albumCaches.find(album.ID);
+		if (cacheIt != m_albumCaches.end())
+		{
+			if (cacheIt->second.MarkupHash != currentMarkupHash)
 			{
-				std::filesystem::path source = album.Path / album.AlbumArt;
-				std::filesystem::path destination = album.NewPath / ("cover" + album.AlbumArt.extension().string());
-
-				std::ifstream src(source, std::ios::binary);
-				if (!src)
-					throw std::runtime_error("Failed to open source: " + source.string());
-
-				std::ofstream dest(destination, std::ios::binary);
-				if (!dest)
-					throw std::runtime_error("Failed to open destination: " + destination.string());
-
-				dest << src.rdbuf();
+				if (std::filesystem::exists(getCacheFilePath(album))) 
+					std::cout << "Markup file changed - remastering entire album\n";
+				markupChanged = true;
+				cacheIt->second.Songs.clear();
+				cacheIt->second.MarkupHash = currentMarkupHash;
 			}
+		}
+		else
+		{
+			m_albumCaches[album.ID].MarkupHash = currentMarkupHash;
+		}
 
 		for (const Song& song : album.SongsList) ProcessSong(song, album);
+
+		saveCache(album);
 	}
 	catch (const std::exception& ex) { std::cerr << "[ProcessAlbum] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[ProcessAlbum] Unknown exception" << std::endl; }
@@ -434,12 +457,16 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 	try
 	{
 		std::string currentHash = calculateFileHash(song.Path);
-		std::string compositeId = std::to_string(album.ID) + ":" + std::to_string(song.ID);
-		auto cacheIt = std::find_if(m_songCache.begin(), m_songCache.end(),
-			[&compositeId, &song](const SongCacheEntry& entry) {
-				return entry.CompositeID == compositeId && entry.Path == song.Path;
+		std::string songId = std::to_string(song.ID);
+
+		auto& albumCache = m_albumCaches[album.ID];
+
+		auto cacheIt = std::find_if(albumCache.Songs.begin(), albumCache.Songs.end(),
+			[&songId, &song](const SongCacheEntry& entry) {
+				return entry.SongID == songId && entry.Path == song.Path;
 			});
-		if (cacheIt != m_songCache.end() && cacheIt->Hash == currentHash)
+
+		if (cacheIt != albumCache.Songs.end() && cacheIt->Hash == currentHash)
 		{
 			std::cout << "Skipping: " << song.Title << " (File hash matches cache)\n";
 			return;
@@ -479,11 +506,11 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		std::string command = cmd.str();
 
 #ifdef _WIN32
-	command += " 2>&1 1>NUL"; 
-	std::unique_ptr<FILE, int(*)(FILE*)> pipe(_popen(command.c_str(), "r"), _pclose);
+		command += " 2>&1 1>NUL";
+		std::unique_ptr<FILE, int(*)(FILE*)> pipe(_popen(command.c_str(), "r"), _pclose);
 #else
-	command += " 2>&1 1>/dev/null"; 
-	std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), pclose);
+		command += " 2>&1 1>/dev/null";
+		std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), pclose);
 #endif
 		if (!pipe)
 		{
@@ -496,14 +523,14 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		while (fgets(buffer, sizeof(buffer), pipe.get()))
 			output += buffer;
 
-		if (cacheIt != m_songCache.end())
+		if (cacheIt != albumCache.Songs.end())
 		{
 			cacheIt->Hash = currentHash;
 		}
 		else
 		{
-			SongCacheEntry newEntry = { compositeId, song.Path, currentHash };
-			m_songCache.push_back(newEntry);
+			SongCacheEntry newEntry = { songId, song.Path, currentHash };
+			albumCache.Songs.push_back(newEntry);
 		}
 	}
 	catch (const std::exception& ex) { std::cerr << "[ProcessSong] Exception: " << ex.what() << std::endl; }
@@ -514,38 +541,48 @@ void MasteringUtility::Master(const std::filesystem::path& markupFile)
 {
 	try
 	{
+		m_markupFile = markupFile;
 		m_audioCodecs = getAudioCodecs();
 		Albums albums;
 		const std::filesystem::path oldDir = std::filesystem::current_path();
 		ParseMarkup(markupFile, albums);
-		loadCache(markupFile);
-		for (const auto& album : albums) ProcessAlbum(album);	
-		saveCache(albums, markupFile);
+		for (const auto& album : albums) ProcessAlbum(album);
 		std::filesystem::current_path(oldDir);
 	}
 	catch (const std::exception& ex) { std::cerr << "[Master] Exception: " << ex.what() << std::endl; }
 	catch (...) { std::cerr << "[Master] Unknown exception" << std::endl; }
 }
 
-std::filesystem::path MasteringUtility::getCacheFilePath(const std::filesystem::path& markupFile) const
+std::filesystem::path MasteringUtility::getCacheFilePath(const Album& album) const
 {
-	std::string filename = markupFile.stem().string() + ".masc";
-	return markupFile.parent_path() / filename;
+	std::string filename = std::to_string(album.ID) + ".masc";
+	return album.NewPath / ".mas" / filename;
 }
 
-void MasteringUtility::loadCache(const std::filesystem::path& markupFile)
+void MasteringUtility::loadCache(const Album& album)
 {
-	m_songCache.clear();
-	std::filesystem::path cachePath = getCacheFilePath(markupFile);
+	m_albumCaches[album.ID].Songs.clear();
+	std::filesystem::path cachePath = getCacheFilePath(album);
+
+	if (!std::filesystem::exists(cachePath)) return;
 
 	std::ifstream cacheFile(cachePath);
 	if (!cacheFile.is_open()) return;
 
 	std::string line;
+	bool firstLine = true;
+
 	while (std::getline(cacheFile, line))
 	{
 		line = trim(line);
 		if (line.empty() || line[0] == ';') continue;
+
+		if (firstLine)
+		{
+			m_albumCaches[album.ID].MarkupHash = line;
+			firstLine = false;
+			continue;
+		}
 
 		std::stringstream ss(line);
 		std::string segment;
@@ -556,17 +593,19 @@ void MasteringUtility::loadCache(const std::filesystem::path& markupFile)
 		if (parts.size() == 3)
 		{
 			SongCacheEntry entry;
-			entry.CompositeID = parts[0];
+			entry.SongID = parts[0];
 			entry.Path = parts[1];
 			entry.Hash = parts[2];
-			m_songCache.push_back(entry);
+			m_albumCaches[album.ID].Songs.push_back(entry);
 		}
 	}
 }
 
-void MasteringUtility::saveCache(const Albums& albums, const std::filesystem::path& markupFile) const
+void MasteringUtility::saveCache(const Album& album) const
 {
-	std::filesystem::path cachePath = getCacheFilePath(markupFile);
+	std::filesystem::path cachePath = getCacheFilePath(album);
+	std::filesystem::create_directories(cachePath.parent_path());
+
 	std::ofstream cacheFile(cachePath);
 
 	if (!cacheFile.is_open()) {
@@ -576,9 +615,14 @@ void MasteringUtility::saveCache(const Albums& albums, const std::filesystem::pa
 
 	cacheFile << "; Mastering Utility Cache File\n";
 
-	for (const auto& entry : m_songCache) {
-		cacheFile << entry.CompositeID << ", "
-			<< entry.Path.string() << ", "
-			<< entry.Hash << "\n";
+	auto it = m_albumCaches.find(album.ID);
+	if (it != m_albumCaches.end()) {
+		cacheFile << it->second.MarkupHash << "\n";
+
+		for (const auto& entry : it->second.Songs) {
+			cacheFile << entry.SongID << ", "
+				<< entry.Path.string() << ", "
+				<< entry.Hash << "\n";
+		}
 	}
 }
