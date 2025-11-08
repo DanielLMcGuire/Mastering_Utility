@@ -71,22 +71,23 @@ endif()
 if(MSVC)
     add_compile_options(/EHsc)
 
-    set(RELEASE_FLAGS "/O2 /WX")
-    set(LINKER_FLAGS "/LTCG")
+    set(RELEASE_FLAGS "/O2 /GL /Gy /GS /Oi /analyze-")
+    set(LINKER_FLAGS "/LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF /DYNAMICBASE /NXCOMPAT /GUARD:CF")
     set(DEBUG_FLAGS "/Zi /Od /RTC1")
     set(LINKER_DEBUG_FLAGS "/DEBUG")
 
     set(RELWITHDEBINFO_FLAGS "${RELEASE_FLAGS} /Zi")
     set(MINSIZEREL_FLAGS "${RELEASE_FLAGS} /O1")
 else()
-    set(RELEASE_FLAGS "-O3 -mtune=generic -pipe -flto -Werror")
-    set(LINKER_FLAGS "-flto")
+    set(RELEASE_FLAGS "-O3 -mtune=generic -pipe -flto -Werror -fvisibility=hidden -ffunction-sections -fdata-sections -fstack-protector-strong -fomit-frame-pointer")
+    set(LINKER_FLAGS "-flto -Wl,--gc-sections -Wl,-z,relro -Wl,-z,now ")
     set(DEBUG_FLAGS "-g -O0")
     set(LINKER_DEBUG_FLAGS "")
 
     set(RELWITHDEBINFO_FLAGS "${RELEASE_FLAGS} -g")
     set(MINSIZEREL_FLAGS "${RELEASE_FLAGS} -Os")
 endif()
+
 
 set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
