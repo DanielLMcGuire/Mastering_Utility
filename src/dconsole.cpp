@@ -1,8 +1,10 @@
 /**
  * @file dconsole.cpp
- * @brief Implementation of Daniel's Console Library
+ * @brief Implementation of Daniel's Console Library (MIT License)
  * @author Daniel McGuire
  */
+
+/// VERSION 1.0.0
 
 // Copyright 2025 Daniel McGuire
 //
@@ -52,7 +54,7 @@ void DConsole::printColorText(const std::string& text, const std::string& colorC
 	std::cout << colorCode << text << "\033[0m";
 }
 
-void DConsole::registerArg(std::string longName, ArgType type, char shortName)
+void DConsole::registerFlag(std::string longName, DConsole::f type, char shortName)
 {
 	RegisteredArg arg{ std::move(longName), shortName, type, false, "" };
 	argsLong[arg.longName] = std::move(arg);
@@ -87,7 +89,7 @@ void DConsole::parse(int argc, char** argv)
 			{
 				longKey = key;
 				auto it = argsLong.find(longKey);
-				if (it != argsLong.end() && it->second.type != ArgType::Bool && (i + 1) < argc)
+				if (it != argsLong.end() && it->second.type != DConsole::f::boolean && (i + 1) < argc)
 				{
 					val = argv[++i];             
 					stripQuotes(val);
@@ -120,7 +122,7 @@ void DConsole::parse(int argc, char** argv)
 					val = std::string(arg + 3);
 					stripQuotes(val);
 				}
-				else if (regArg.type != ArgType::Bool && (i + 1) < argc)
+				else if (regArg.type != DConsole::f::boolean && (i + 1) < argc)
 				{
 					val = argv[++i];
 					stripQuotes(val);
@@ -141,10 +143,10 @@ void DConsole::parse(int argc, char** argv)
 	}
 }
 
-bool DConsole::f_bool(const std::string& longName) const
+bool DConsole::f_boolean(const std::string& longName) const
 {
 	auto it = argsLong.find(longName);
-	if (it != argsLong.end() && it->second.type == ArgType::Bool)
+	if (it != argsLong.end() && it->second.type == DConsole::f::boolean)
 	{
 		return it->second.provided;
 	}
@@ -154,17 +156,17 @@ bool DConsole::f_bool(const std::string& longName) const
 std::string DConsole::f_string(const std::string& longName, const std::string& defaultVal) const
 {
 	auto it = argsLong.find(longName);
-	if (it != argsLong.end() && it->second.type == ArgType::String && it->second.provided)
+	if (it != argsLong.end() && it->second.type == DConsole::f::string && it->second.provided)
 	{
 		return it->second.rawValue;
 	}
 	return defaultVal;
 }
 
-int DConsole::f_int(const std::string& longName, int defaultVal) const
+int DConsole::f_integer(const std::string& longName, int defaultVal) const
 {
 	auto it = argsLong.find(longName);
-	if (it != argsLong.end() && it->second.type == ArgType::Int && it->second.provided)
+	if (it != argsLong.end() && it->second.type == DConsole::f::integer && it->second.provided)
 	{
 		int result = 0;
 		auto [ptr, ec] = std::from_chars(it->second.rawValue.data(),
@@ -176,10 +178,10 @@ int DConsole::f_int(const std::string& longName, int defaultVal) const
 }
 
 
-char DConsole::f_char(const std::string& longName, char defaultVal) const
+char DConsole::f_character(const std::string& longName, char defaultVal) const
 {
 	auto it = argsLong.find(longName);
-	if (it != argsLong.end() && it->second.type == ArgType::Char && it->second.provided)
+	if (it != argsLong.end() && it->second.type == DConsole::f::character && it->second.provided)
 	{
 		if (!it->second.rawValue.empty())
 		{

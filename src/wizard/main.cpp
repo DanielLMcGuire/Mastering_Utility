@@ -112,13 +112,13 @@ namespace MasteringWizard
 		bool ret = false;
 
 		DConsole conlib;
-		conlib.registerArg("help", DConsole::ArgType::Bool, 'h');
-		conlib.registerArg("auto", DConsole::ArgType::Bool, 'a');
-		conlib.registerArg("markupfile", DConsole::ArgType::String, 'f');
+		conlib.registerFlag("help", DConsole::f::boolean, 'h');
+		conlib.registerFlag("auto", DConsole::f::boolean, 'a');
+		conlib.registerFlag("markupfile", DConsole::f::string, 'f');
 
 		conlib.parse(argc, argv);
 
-		if (conlib.f_bool("help")) 
+		if (conlib.f_boolean("help")) 
 		{
 			std::cout << "Mastering Utility Wizard\n"
 					  << "Usage: mastering_wizard [--markupfile=<path>] [--auto] [--help]\n\n"
@@ -128,7 +128,7 @@ namespace MasteringWizard
 					  << "  --help, -h      Display this help message.\n";
 			ret = false;
 		}
-		if (conlib.f_bool("auto")) 
+		if (conlib.f_boolean("auto")) 
 		{
 			g_AutoAddSongs = true;
 		}

@@ -4,6 +4,8 @@
  * @author Daniel McGuire
  */
 
+/// VERSION 1.0.0
+
  // Copyright 2025 Daniel McGuire
  //
  // Licensed under the MIT License, unless used with GPLv3
@@ -66,7 +68,7 @@ public:
 	 */
 	void printColorText(const std::string& text, const std::string& colorCode);
 
-	enum class ArgType { Bool, String, Int, Char };
+	enum class f { boolean, string, integer, character };
 	/**
 	 * @brief Structure to hold registered argument information
 	 *
@@ -75,7 +77,7 @@ public:
 	struct RegisteredArg {
 		std::string longName;
 		char shortName;
-		ArgType type;
+		DConsole::f type;
 		bool provided = false;          // did user pass it
 		std::string rawValue;           // original value string
 	};
@@ -87,7 +89,7 @@ public:
 	 * @param type The type of the argument
 	 * @param shortName The short name of the argument (optional)
 	 */
-	void registerArg(std::string longName, ArgType type, char shortName = '\0');
+	void registerFlag(std::string longName, DConsole::f type, char shortName = '\0');
 
 	/**
 	 * @brief Parse command-line arguments
@@ -103,7 +105,7 @@ public:
 	 * @param longName The long name of the argument
 	 * @return True if the argument was provided, false otherwise
 	 */
-	bool f_bool(const std::string& longName) const;
+	bool f_boolean(const std::string& longName) const;
 
 	/**
 	 * @brief Retrieve argument string values
@@ -121,7 +123,7 @@ public:
 	 * @param defaultVal Default value
 	 * @return The value of the argument
 	 */
-	int f_int(const std::string& longName, int defaultVal = 0) const;
+	int f_integer(const std::string& longName, int defaultVal = 0) const;
 	
 	/**
 	 * @brief Retrieve argument char values
@@ -130,7 +132,7 @@ public:
 	 * @param defaultVal Default value
 	 * @return The value of the argument
 	 */
-	char f_char(const std::string& longName, char defaultVal = '\0') const;
+	char f_character(const std::string& longName, char defaultVal = '\0') const;
 	
 	/**
 	 * @brief Allow "Unknown argument format:" message to print

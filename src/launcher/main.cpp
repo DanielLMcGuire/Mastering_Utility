@@ -52,8 +52,8 @@ int main( int argc, char* argv[] )
 
 	DConsole conlib;
 	conlib.supressUnknownArgument = true;
-	conlib.registerArg("help", DConsole::ArgType::Bool, 'h');
-	conlib.registerArg("markupfile", DConsole::ArgType::String, 'f');
+	conlib.registerFlag("help", DConsole::f::boolean, 'h');
+	conlib.registerFlag("markupfile", DConsole::f::string, 'f');
 
 	conlib.parse(argc, argv);
 
