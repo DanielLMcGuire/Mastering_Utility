@@ -1,0 +1,3 @@
+[submodule "extern/DConsole"]
+	path = extern/DConsole
+	url = https://github.com/DanielLMcGuire/DConsole

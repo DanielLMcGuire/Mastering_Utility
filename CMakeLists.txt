@@ -132,11 +132,11 @@ target_include_directories(masteringutil PUBLIC
 )
 
 add_library(consoleutil STATIC
-	src/dconsole.cpp
+	${CMAKE_SOURCE_DIR}/extern/DConsole/dconsole.cpp
 )
 
 target_include_directories(consoleutil PUBLIC
-	${CMAKE_SOURCE_DIR}/src
+	${CMAKE_SOURCE_DIR}/extern/DConsole
 )
 
 add_executable(masteringutil_launcher
