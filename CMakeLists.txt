@@ -123,6 +123,16 @@ if(WIN32)
 	configure_file("scripts/install.wxs" "${CMAKE_CURRENT_BINARY_DIR}/install.wxs")
 endif()
 
+include(FetchContent)
+
+FetchContent_Declare(
+    DConsole
+    GIT_REPOSITORY https://github.com/DanielLMcGuire/DConsole.git
+    GIT_TAG main
+)
+
+FetchContent_MakeAvailable(DConsole)
+
 add_library(masteringutil STATIC
 	src/MasteringUtil.cpp
 )
@@ -131,20 +141,12 @@ target_include_directories(masteringutil PUBLIC
 	${CMAKE_SOURCE_DIR}/src
 )
 
-add_library(consoleutil STATIC
-	${CMAKE_SOURCE_DIR}/extern/DConsole/dconsole.cpp
-)
-
-target_include_directories(consoleutil PUBLIC
-	${CMAKE_SOURCE_DIR}/extern/DConsole
-)
-
 add_executable(masteringutil_launcher
 	${LAUNCHER_SOURCES}
 	${CMAKE_CURRENT_BINARY_DIR}/launcher.rc
 )
 target_link_libraries(masteringutil_launcher
-	PRIVATE masteringutil consoleutil
+	PRIVATE masteringutil DConsole
 )
 set_target_properties(masteringutil_launcher PROPERTIES OUTPUT_NAME MasteringUtility)
 
@@ -153,7 +155,7 @@ add_executable(masteringutil_wizard
 	${CMAKE_CURRENT_BINARY_DIR}/wizard.rc
 )
 target_link_libraries(masteringutil_wizard
-	PRIVATE masteringutil consoleutil
+	PRIVATE masteringutil DConsole
 )
 set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizard)
 
@@ -162,7 +164,7 @@ add_executable(masteringutil_tests
 	${CMAKE_CURRENT_BINARY_DIR}/tests.rc
 )
 target_link_libraries(masteringutil_tests
-	PRIVATE masteringutil consoleutil
+	PRIVATE masteringutil DConsole
 )
 set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)
 

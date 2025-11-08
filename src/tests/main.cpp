@@ -20,7 +20,7 @@
  // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../MasteringUtil.h"
-#include "../dconsole.h"
+#include <dconsole.h>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
