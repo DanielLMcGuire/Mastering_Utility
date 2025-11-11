@@ -1,0 +1,19 @@
+[package]
+name = "masteringutil"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+cxx-build = "1.0"
+
+[[bin]]
+name = "MasteringUtility"
+path = "src/launcher/main.rs"
+
+[[bin]]
+name = "MasteringWizard"
+path = "src/wizard/main.rs"
+
+[[bin]]
+name = "MasteringTests"
+path = "src/tests/main.rs"
