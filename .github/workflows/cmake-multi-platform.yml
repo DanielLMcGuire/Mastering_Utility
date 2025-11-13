@@ -45,9 +45,15 @@ jobs:
       shell: bash
       run: cmake --build build --config Release
 
-    - name: Run Unit Tests
+    - name: Run Unit Tests 
+      if: matrix.os != 'windows-latest'
       shell: bash
-      run: "build/MasteringTests.exe"
+      run: "${{ github.workspace }}/build/MasteringTests.exe"
+
+    - name: Run Unit Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: "%CD%\\build\\MasteringTests.exe"
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
