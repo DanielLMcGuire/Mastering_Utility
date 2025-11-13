@@ -24,7 +24,7 @@ Includes a C++ tagging API.
 ## Prerequisites
 
 - **ffmpeg** in your system PATH (`ffmpeg -version`) – [Download here](https://ffmpeg.org/download.html)  
-- For building: CMake 3.10+, C++17 compiler, 64-bit system recommended
+- For building: CMake 3.10+, C++20 compiler, Cargo/Rust, 64-bit system recommended
 
 ## Installation
 
@@ -38,7 +38,10 @@ Grab the installer for your platform from the [Releases page](https://github.com
 ```bash
 git clone --depth=1 https://github.com/DanielLMcGuire/Mastering_Utility.git
 cd Mastering_Utility
-
+# C++
+cmake -S . -B build (-G Ninja)
+cmake --build build (--config[Release|Debug|MinSizeRel|RelWithDebInfo])
+# Rust
 cargo build
 ```
 
