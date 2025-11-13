@@ -17,9 +17,9 @@ path = "src/lib.rs"
 name = "MasteringUtility"
 path = "src/launcher/main.rs"
 
-#[[bin]]
-#name = "MasteringWizard"
-#path = "src/wizard/main.rs"
+[[bin]]
+name = "MasteringWizard"
+path = "src/wizard/main.rs"
 
 #[[bin]]
 #name = "MasteringTests"
