@@ -17,30 +17,19 @@ use masteringutil::ffi;
 use std::env;
 
 fn main() {
+    println!("Daniel's Mastering Utility");
     let args: Vec<String> = env::args().collect();
     
     if args.len() < 2 {
-        eprintln!("Usage: {} <markup_file.ini>", args[0]);
+        eprintln!("Usage: {} <album.mas>", args[0]);
         std::process::exit(1);
     }
     
     let markup_file = &args[1];
     
-    // Create the wrapper using the factory function
     let mut wrapper = ffi::create();
     
-    // Parse the markup file
-    wrapper.pin_mut().ParseMarkup(markup_file);
-    
-    // Get album count
-    let album_count = wrapper.pin_mut().AlbumCount();
-    println!("Found {} albums", album_count);
-    
-    // Process each album
-    for i in 0..album_count {
-        println!("Processing album {}...", i);
-        wrapper.pin_mut().ProcessAlbum(i);
-    }
+    wrapper.pin_mut().Master(markup_file);
     
     println!("Mastering complete!");
 }
