@@ -32,6 +32,19 @@ set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
 set(MASTERINGUTIL_SOURCES
     src/MasteringUtil.cpp
 )
+set(TESTS_SOURCES
+    src/tests/main.cpp
+)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    DConsole
+    GIT_REPOSITORY https://github.com/DanielLMcGuire/DConsole.git
+    GIT_TAG main
+)
+
+FetchContent_MakeAvailable(DConsole)
 
 add_library(masteringutil STATIC ${MASTERINGUTIL_SOURCES})
 
@@ -40,3 +53,9 @@ target_include_directories(masteringutil PUBLIC
 )
 
 target_link_libraries(masteringutil)
+
+
+add_executable(masteringutil_tests ${TESTS_SOURCES})
+target_link_libraries(masteringutil_tests
+	PRIVATE masteringutil DConsole
+)
