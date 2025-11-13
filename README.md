@@ -2,8 +2,8 @@
 
 [![CMake Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
 
-C++ 20 library for audio tagging using a metadata markup format and a Wizard to aid in creating the format.
-Includes a C++ tagging API (GPL 3.0) and an Console handling library (MIT).
+C++ 20 / Rust library for audio tagging using a metadata markup format and a Wizard to aid in creating the format.
+Includes a C++ tagging API.
 
 > [!IMPORTANT]
 > API docs are still in progress.
@@ -34,30 +34,25 @@ Grab the installer for your platform from the [Releases page](https://github.com
 
 ### Build from source
 
-<sub>Run from Visual Studio Powershell if using MSVC</sub>
 
 ```bash
 git clone --depth=1 https://github.com/DanielLMcGuire/Mastering_Utility.git
 cd Mastering_Utility
 
-cmake -S . -B build
-# Optional: use Ninja for faster build
-# cmake -S . -B build -G Ninja
-
-cmake --build build --target build_all
+cargo build
 ```
 
 ## Usage
 
 <sub><code>cd build</code></sub>
 
-### 1. Mastering Wizard (`masteringwizard`)
+### 1. Mastering Wizard (`masteringwizard`) NOT PORTED
 
 Interactive Markup creator / editor.
 
 ```bash
 # Create new configuration
-./masteringwizard --Markupfile="output.Markup"
+./masteringwizard --Markupfile="output.mas"
 
 # Show help
 ./masteringwizard --help
@@ -73,7 +68,7 @@ Prompts for:
 > [!TIP] 
 > Type `exit` or `quit` anytime to leave the wizard.
 
-### 2. Mastering Utility (`masteringutility`)
+### 2. Mastering Utility (`masteringutility`) PORTED
 
 Processes the Markup file and encodes all tracks.
 
