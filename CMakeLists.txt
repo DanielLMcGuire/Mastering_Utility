@@ -30,10 +30,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
 
 set(MASTERINGUTIL_SOURCES
-    src/MasteringUtil.cpp
+    src/backend/MasteringUtil.cpp
 )
 set(TESTS_SOURCES
-    src/tests/main.cpp
+    src/frontend/tests.cpp
 )
 
 include(FetchContent)
@@ -49,7 +49,7 @@ FetchContent_MakeAvailable(DConsole)
 add_library(masteringutil STATIC ${MASTERINGUTIL_SOURCES})
 
 target_include_directories(masteringutil PUBLIC
-    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/backend
 )
 
 target_link_libraries(masteringutil)

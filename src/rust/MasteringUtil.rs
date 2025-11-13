@@ -17,7 +17,6 @@ pub mod ffi {
         fn AlbumCount(self: Pin<&mut MasteringUtilWrapper>) -> usize;
         fn SongCount(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize) -> usize;
 
-        // ========== ALBUM GETTERS ==========
         fn GetAlbumID(self: &MasteringUtilWrapper, albumIndex: usize) -> i32;
         fn GetAlbumTitle(self: &MasteringUtilWrapper, albumIndex: usize) -> String;
         fn GetAlbumArtist(self: &MasteringUtilWrapper, albumIndex: usize) -> String;
@@ -30,7 +29,6 @@ pub mod ffi {
         fn GetAlbumNewPath(self: &MasteringUtilWrapper, albumIndex: usize) -> String;
         fn GetAlbumAlbumArt(self: &MasteringUtilWrapper, albumIndex: usize) -> String;
 
-        // ========== ALBUM SETTERS ==========
         fn SetAlbumID(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, id: i32);
         fn SetAlbumTitle(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, title: &str);
         fn SetAlbumArtist(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, artist: &str);
@@ -43,7 +41,6 @@ pub mod ffi {
         fn SetAlbumNewPath(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, newPath: &str);
         fn SetAlbumAlbumArt(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, albumArt: &str);
 
-        // ========== SONG GETTERS ==========
         fn GetSongID(self: &MasteringUtilWrapper, albumIndex: usize, songIndex: usize) -> i32;
         fn GetSongTitle(self: &MasteringUtilWrapper, albumIndex: usize, songIndex: usize) -> String;
         fn GetSongArtist(self: &MasteringUtilWrapper, albumIndex: usize, songIndex: usize) -> String;
@@ -58,7 +55,6 @@ pub mod ffi {
         fn GetSongCodec(self: &MasteringUtilWrapper, albumIndex: usize, songIndex: usize) -> String;
         fn GetSongTrackNumber(self: &MasteringUtilWrapper, albumIndex: usize, songIndex: usize) -> i32;
 
-        // ========== SONG SETTERS ==========
         fn SetSongID(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, songIndex: usize, id: i32);
         fn SetSongTitle(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, songIndex: usize, title: &str);
         fn SetSongArtist(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, songIndex: usize, artist: &str);
@@ -73,7 +69,6 @@ pub mod ffi {
         fn SetSongCodec(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, songIndex: usize, codec: &str);
         fn SetSongTrackNumber(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize, songIndex: usize, trackNumber: i32);
 
-        // ========== ADD/REMOVE METHODS ==========
         fn AddAlbum(self: Pin<&mut MasteringUtilWrapper>);
         fn AddSong(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize);
         fn RemoveAlbum(self: Pin<&mut MasteringUtilWrapper>, albumIndex: usize);

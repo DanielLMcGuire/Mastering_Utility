@@ -7,17 +7,14 @@ class MasteringUtilWrapper {
 public:
     MasteringUtilWrapper() = default;
 
-    // Factory function
     static std::unique_ptr<MasteringUtilWrapper> create() {
         return std::make_unique<MasteringUtilWrapper>();
     }
 
-    // Master a markup file
     void Master(rust::Str markupFile) const {
         m_util.Master(std::filesystem::path(std::string(markupFile.data(), markupFile.size())));
     }
 
-    // Parse a markup file
     void ParseMarkup(rust::Str markupFile) {
         m_util.ParseMarkup(
             std::filesystem::path(std::string(markupFile.data(), markupFile.size())),
@@ -25,7 +22,6 @@ public:
         );
     }
 
-    // Save a markup file
     void SaveMarkup(rust::Str markupFile) {
         m_util.SaveMarkup(
             m_albums,
@@ -33,14 +29,12 @@ public:
         );
     }
 
-    // Process an album
     void ProcessAlbum(size_t albumIndex) {
         if (albumIndex < m_albums.size()) {
             m_util.ProcessAlbum(m_albums[albumIndex]);
         }
     }
 
-    // Process a song
     void ProcessSong(size_t albumIndex, size_t songIndex) {
         if (albumIndex < m_albums.size() && songIndex < m_albums[albumIndex].SongsList.size()) {
             m_util.ProcessSong(
@@ -50,16 +44,13 @@ public:
         }
     }
 
-    // Album count
     size_t AlbumCount() { return m_albums.size(); }
 
-    // Song count for a given album
     size_t SongCount(size_t albumIndex) {
         if (albumIndex < m_albums.size()) return m_albums[albumIndex].SongsList.size();
         return 0;
     }
 
-    // ========== ALBUM GETTERS ==========
     
     int GetAlbumID(size_t albumIndex) const {
         if (albumIndex < m_albums.size()) return m_albums[albumIndex].ID;
@@ -115,8 +106,6 @@ public:
         if (albumIndex < m_albums.size()) return rust::String(m_albums[albumIndex].AlbumArt.string());
         return rust::String("");
     }
-
-    // ========== ALBUM SETTERS ==========
 
     void SetAlbumID(size_t albumIndex, int id) {
         if (albumIndex < m_albums.size()) m_albums[albumIndex].ID = id;
@@ -181,8 +170,6 @@ public:
             m_albums[albumIndex].AlbumArt = std::filesystem::path(std::string(albumArt.data(), albumArt.size()));
         }
     }
-
-    // ========== SONG GETTERS ==========
 
     int GetSongID(size_t albumIndex, size_t songIndex) const {
         if (albumIndex < m_albums.size() && songIndex < m_albums[albumIndex].SongsList.size()) {
@@ -275,8 +262,6 @@ public:
         return 0;
     }
 
-    // ========== SONG SETTERS ==========
-
     void SetSongID(size_t albumIndex, size_t songIndex, int id) {
         if (albumIndex < m_albums.size() && songIndex < m_albums[albumIndex].SongsList.size()) {
             m_albums[albumIndex].SongsList[songIndex].ID = id;
@@ -357,8 +342,6 @@ public:
         }
     }
 
-    // ========== ADD/REMOVE METHODS ==========
-
     void AddAlbum() {
         MasteringUtility::Album album;
         album.ID = static_cast<int>(m_albums.size()) + 1;
@@ -391,7 +374,6 @@ private:
     MasteringUtility::Albums m_albums;
 };
 
-// Free function factory
 inline std::unique_ptr<MasteringUtilWrapper> create() {
     return std::make_unique<MasteringUtilWrapper>();
 }

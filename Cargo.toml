@@ -11,12 +11,12 @@ cxx-build = "1.0"
 
 [lib]
 name = "masteringutil"
-path = "src/lib.rs"
+path = "src/rust/lib.rs"
 
 [[bin]]
 name = "MasteringUtility"
-path = "src/launcher/main.rs"
+path = "src/frontend/launcher.rs"
 
 [[bin]]
 name = "MasteringWizard"
-path = "src/wizard/main.rs"
+path = "src/frontend/wizard.rs"
