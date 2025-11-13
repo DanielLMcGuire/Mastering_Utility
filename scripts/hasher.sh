@@ -1,1 +1,0 @@
-sha256sum masteringutil64.appimage > masteringutil64.appimage.sha256

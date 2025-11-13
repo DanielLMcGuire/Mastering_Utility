@@ -1,10 +1,10 @@
 !include "x64.nsh"
 !define APP_NAME "Daniel's Mastering Utility"
 !define COMP_NAME "Daniel McGuire"
-!define VERSION "1.2.0.0"
+!define VERSION "2.0.0.0"
 !define COPYRIGHT "(C) 2025 Daniel McGuire"
 !define DESCRIPTION "Mastering Utility 1.0"
-!define INSTALLER_NAME "..\build\dist\masteringutil64_setup.exe"
+!define INSTALLER_NAME "..\dist\masteringutil64_setup.exe"
 !define MAIN_APP_EXE "MasteringWizard.exe"
 !define INSTALL_TYPE "SetShellVarContext all"
 !define REG_ROOT "HKLM"
@@ -76,8 +76,8 @@ Section -MainProgram
 ${INSTALL_TYPE}
 SetOverwrite ifnewer
 SetOutPath "$INSTDIR"
-file "..\build\MasteringUtility.exe"
-file "..\build\MasteringWizard.exe"
+file "..\target\Release\MasteringUtility.exe"
+file "..\target\Release\MasteringWizard.exe"
 SetOutPath "$INSTDIR\docs"
 file /r "..\docs\html\*"
 

@@ -1,6 +1,6 @@
 [package]
 name = "masteringutil"
-version = "0.1.0"
+version = "2.0.0"
 edition = "2021"
 
 [dependencies]
@@ -20,7 +20,3 @@ path = "src/launcher/main.rs"
 [[bin]]
 name = "MasteringWizard"
 path = "src/wizard/main.rs"
-
-#[[bin]]
-#name = "MasteringTests"
-#path = "src/tests/main.rs"
