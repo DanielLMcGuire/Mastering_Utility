@@ -1,13 +1,9 @@
 # Mastering Utility
 
-[![CMake Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml?label=C%2B%2B%20%28Backend%29)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
+[![CMake Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml?label=C%2B%2B%20%28Backend%20%2B%20Tests%29)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
 [![Cargo Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml?label=Rust%20Build%20%28Frontend%20%2B%20Wrapper%29)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cargo-multi-platform.yml)
 
 C++ 20 / Rust library for audio tagging using a metadata markup format and a Wizard to aid in creating the format.
-Includes a C++ tagging API.
-
-> [!IMPORTANT]
-> API docs are still in progress.
 
 ## Features
 
@@ -27,13 +23,7 @@ Includes a C++ tagging API.
 - **ffmpeg** in your system PATH (`ffmpeg -version`) – [Download here](https://ffmpeg.org/download.html)  
 - For building: CMake 3.10+, C++20 compiler, Cargo/Rust, 64-bit system recommended
 
-## Installation
-
-### Pre-built binaries
-
-Grab the installer for your platform from the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases).
-
-### Build from source
+## Build from source
 
 
 ```bash
@@ -50,7 +40,7 @@ cargo build
 
 <sub><code>cd build</code></sub>
 
-### 1. Mastering Wizard (`masteringwizard`) NOT PORTED
+### 1. Mastering Wizard (`masteringwizard`)
 
 Interactive Markup creator / editor.
 
@@ -72,7 +62,7 @@ Prompts for:
 > [!TIP] 
 > Type `exit` or `quit` anytime to leave the wizard.
 
-### 2. Mastering Utility (`masteringutility`) PORTED
+### 2. Mastering Utility (`masteringutility`)
 
 Processes the Markup file and encodes all tracks.
 
@@ -86,7 +76,6 @@ It will:
 - Create output directories
 - Re-encode tracks via ffmpeg
 - Apply all metadata tags
-- Retry failed conversions up to 3 times
 
 ## Markup File Format
 <!-- C++ syntax looks nicer -->
