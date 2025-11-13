@@ -22,7 +22,7 @@ fn prompt_string(message: &str, default_value: Option<&str>) -> String {
         if let Some(default) = default_value {
             default.to_string()
         } else {
-            /// @todo Loop
+            // @todo Loop
             input.to_string()
         }
     } else {
@@ -239,10 +239,6 @@ fn collect_albums_interactively(wrapper: &mut UniquePtr<MasteringUtilWrapper>) -
             Some(initial_song_count),
         );
 
-        if song_count < 0 {
-            return Err("Song count cannot be negative.".to_string());
-        }
-
         for j in 0..initial_song_count {
             println!("\n--- Editing Existing Song {}/{}: {} ---", j + 1, initial_song_count, wrapper.GetSongTitle(i, j));
             preview_song(&wrapper, i, j, false);
@@ -396,10 +392,6 @@ fn collect_albums_interactively(wrapper: &mut UniquePtr<MasteringUtilWrapper>) -
             &format!("How many songs in \"{}\"?", title), 
             Some(0)
         );
-
-        if song_count_new_album < 0 {
-            return Err("Song count cannot be negative.".to_string());
-        }
 
         for j in 0..song_count_new_album {
             wrapper.pin_mut().AddSong(new_album_index);
