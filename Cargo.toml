@@ -3,17 +3,24 @@ name = "masteringutil"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+cxx = "1.0"
+
 [build-dependencies]
 cxx-build = "1.0"
+
+[lib]
+name = "masteringutil"
+path = "src/lib.rs"
 
 [[bin]]
 name = "MasteringUtility"
 path = "src/launcher/main.rs"
 
-[[bin]]
-name = "MasteringWizard"
-path = "src/wizard/main.rs"
+#[[bin]]
+#name = "MasteringWizard"
+#path = "src/wizard/main.rs"
 
-[[bin]]
-name = "MasteringTests"
-path = "src/tests/main.rs"
+#[[bin]]
+#name = "MasteringTests"
+#path = "src/tests/main.rs"
