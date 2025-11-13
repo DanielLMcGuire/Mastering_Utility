@@ -1,6 +1,7 @@
 # Mastering Utility
 
-[![CMake Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
+[![CMake Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml?label=C%2B%2B%20%28Backend%29)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml)
+[![Cargo Multi-Platform Build](https://img.shields.io/github/actions/workflow/status/DanielLMcGuire/Mastering_Utility/cmake-multi-platform.yml?label=Rust%20Build%20%28Frontend%20%2B%20Wrapper%29)](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cargo-multi-platform.yml)
 
 C++ 20 / Rust library for audio tagging using a metadata markup format and a Wizard to aid in creating the format.
 Includes a C++ tagging API.
@@ -17,8 +18,8 @@ Includes a C++ tagging API.
 
 ## Download
 
-- **Windows**: 64-bit installers (MSI/EXE) on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
-- **macOS / Linux**: Artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml?query=event%3Apush+branch%3Amaster+is%3Asuccess)
+- **Windows**: 64-bit installers on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
+- **macOS / Linux**: Artifacts from the latest [GitHub Actions build](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cargo-multi-platform.yml?query=event%3Apush+branch%3Amaster+is%3Asuccess)
 - **Build from source**: See below
 
 ## Prerequisites
