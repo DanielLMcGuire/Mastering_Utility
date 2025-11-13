@@ -48,12 +48,12 @@ jobs:
     - name: Run Unit Tests 
       if: matrix.os != 'windows-latest'
       shell: bash
-      run: "${{ github.workspace }}/build/MasteringTests.exe"
+      run: "${{ github.workspace }}/build/MasteringTests"
 
     - name: Run Unit Tests (Windows)
       if: matrix.os == 'windows-latest'
       shell: cmd
-      run: "%CD%\\build\\MasteringTests.exe"
+      run: "%CD%\\build\\Release\\MasteringTests.exe"
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
