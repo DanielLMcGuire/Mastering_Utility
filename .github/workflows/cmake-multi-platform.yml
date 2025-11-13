@@ -34,12 +34,12 @@ jobs:
       
     - name: Configure
       shell: bash
-      run: cmake -B ${{ github.workspace }}/build \
+      run: cmake -B build \
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
                 -DCMAKE_BUILD_TYPE=Release \
                 -G Ninja \
-                -S ${{ github.workspace }}
+                -S .
                 
     - name: Build
       shell: bash
