@@ -31,7 +31,6 @@ set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
 
 set(MASTERINGUTIL_SOURCES
     src/MasteringUtil.cpp
-    src/MasteringUtil_cxx.cpp
 )
 
 add_library(masteringutil STATIC ${MASTERINGUTIL_SOURCES})
@@ -40,17 +39,4 @@ target_include_directories(masteringutil PUBLIC
     ${CMAKE_SOURCE_DIR}/src
 )
 
-include(FetchContent)
-FetchContent_Declare(
-    DConsole
-    GIT_REPOSITORY https://github.com/DanielLMcGuire/DConsole.git
-    GIT_TAG main
-)
-FetchContent_MakeAvailable(DConsole)
-
-target_link_libraries(masteringutil PUBLIC DConsole)
-
-message(STATUS "CMake only builds the C++ library; Rust executables are now built via Cargo:")
-message(STATUS "  cargo build --bin launcher")
-message(STATUS "  cargo build --bin wizard")
-message(STATUS "  cargo build --bin tests")
+target_link_libraries(masteringutil)
