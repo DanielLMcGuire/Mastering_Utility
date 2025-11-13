@@ -13,10 +13,34 @@
  // You should have received a copy of the GNU General Public License
  // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-fn main() {
-    let masterer = MasteringUtil::ffi::new_mastering_utility();
-	
-    masterer_ref.Master("album.ini");
+use masteringutil::ffi;
+use std::env;
 
-    println!("Mastering finished!");
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    
+    if args.len() < 2 {
+        eprintln!("Usage: {} <markup_file.ini>", args[0]);
+        std::process::exit(1);
+    }
+    
+    let markup_file = &args[1];
+    
+    // Create the wrapper using the factory function
+    let mut wrapper = ffi::create();
+    
+    // Parse the markup file
+    wrapper.pin_mut().ParseMarkup(markup_file);
+    
+    // Get album count
+    let album_count = wrapper.pin_mut().AlbumCount();
+    println!("Found {} albums", album_count);
+    
+    // Process each album
+    for i in 0..album_count {
+        println!("Processing album {}...", i);
+        wrapper.pin_mut().ProcessAlbum(i);
+    }
+    
+    println!("Mastering complete!");
 }
