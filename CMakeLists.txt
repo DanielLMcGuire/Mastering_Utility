@@ -59,3 +59,4 @@ add_executable(masteringutil_tests ${TESTS_SOURCES})
 target_link_libraries(masteringutil_tests
 	PRIVATE masteringutil DConsole
 )
+set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)
