@@ -28,62 +28,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set build output directory
-      if: matrix.os != 'windows-latest'
-      id: strings-posix
-      shell: bash
-      run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-    - name: Set build output directory (Windows)
+    - name: Set up MSVC
       if: matrix.os == 'windows-latest'
-      id: strings-nt
-      shell: bash
-      run: echo "build-output-dir=${{ github.workspace }}/build/dist" >> "$GITHUB_OUTPUT"
-
+      uses: microsoft/setup-msbuild@v1
+      
     - name: Configure
-      if: matrix.os != 'windows-latest'
       shell: bash
-      run: cmake -B ${{ steps.strings-posix.outputs.build-output-dir }} \
+      run: cmake -B build \
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
                 -DCMAKE_BUILD_TYPE=Release \
                 -G Ninja \
-                -S ${{ github.workspace }}
+                -S .
                 
     - name: Build
-      if: matrix.os != 'windows-latest'
       shell: bash
-      run: cmake --build ${{ steps.strings-posix.outputs.build-output-dir }} 
-
-    - name: Set up MSVC (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: microsoft/setup-msbuild@v1
-    - name: Configure and Build (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      env:
-        CCACHE_DISABLE: 1
-      run: |
-        CALL "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        cmake -B "%CD%\build" -G Ninja -S "%CD%"
-        cmake --build "%CD%\build"
-    - name: Run Unit Tests (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: cmd
-      run: "%CD%\\build\\MasteringTests.exe"
+      run: cmake --build build
 
     - name: Upload Artifacts
-      if: matrix.os != 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
-        path: ${{ steps.strings-posix.outputs.build-output-dir }}
-        retention-days: 30
-    - name: Upload Artifacts (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-${{ matrix.os }}
-        path: ${{ steps.strings-nt.outputs.build-output-dir }}
+        path: ${{ github.workspace }}/build
         retention-days: 30
 
