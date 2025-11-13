@@ -45,6 +45,10 @@ jobs:
       shell: bash
       run: cmake --build build
 
+    - name: Run Unit Tests
+      shell: bash
+      run: "build/MasteringTests.exe"
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
