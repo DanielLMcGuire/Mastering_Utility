@@ -28,7 +28,7 @@ jobs:
     
     - name: Build
       shell: bash
-      run: cargo build --debug --target ${{ matrix.target }}
+      run: cargo build --target ${{ matrix.target }}
     
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
