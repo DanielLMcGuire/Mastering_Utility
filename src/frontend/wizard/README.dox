@@ -1,0 +1,33 @@
+/**
+ * @page mastering_utility_wizard_impl Mastering Utility Wizard Implementations
+ *
+ * @brief Details for the implementation files used by the Mastering Utility Wizard.
+ *
+ * This page covers the command line wizard components that handle album and song
+ * metadata editing before saving everything to a Markup file.
+ *
+ * @section cpp_impl Cpp Implementation
+ * @subsection cpp_file File: cpp/wizard.cpp
+ *
+ * The Cpp version provides a command line interface for managing audio project
+ * metadata. It uses the DConsole library to parse arguments and handle user prompts.
+ *
+ * Features include:
+ * - Creating and editing album level metadata
+ * - Adding or modifying songs in an album
+ * - Setting fields such as title artist genre year copyright
+ * - Defining file paths and FFmpeg args
+ * - Loading existing Markup files
+ * - Saving new or edited project data
+ *
+ *
+ * @section rust_impl Rust Implementation
+ * @subsection rust_file File: rs/wizard.rs
+ *
+ * The Rust version offers similar workflow and interactivity for album and song
+ * metadata editing. It connects to the masteringutil core through the cxx crate
+ * to access shared functionality.
+ *
+ * It includes custom prompting utilities and command line parsing for automation
+ * and help output while keeping the workflow streamlined.
+ */
