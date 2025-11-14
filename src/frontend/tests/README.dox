@@ -1,0 +1,28 @@
+/**
+ * @page mastering_utility_tests Mastering Utility Tests
+ *
+ * @brief Overview of the main test suite for the Mastering Utility project.
+ *
+ * This page describes the testing components responsible for validating
+ * metadata handling and file persistence.
+ *
+ * @section features Key Features
+ *
+ * @subsection data_gen Test Data Generation
+ * Creates MasteringUtility::Album and MasteringUtility::Song instances filled
+ * with example metadata for use in the tests.
+ *
+ * @subsection markup_persist Markup Persistence Test
+ * The test suite:
+ * - Uses MasteringUtility::SaveMarkup to write album and song metadata to a
+ *   temporary `.mas` file.
+ * - Uses MasteringUtility::ParseMarkup to load the metadata back from the file.
+ *
+ * @subsection validation Data Validation
+ * Compares each field of the original data structures against the parsed ones
+ * to ensure proper serialization and deserialization behavior.
+ *
+ * @subsection perf Performance Measurement
+ * Measures the execution time of the tests to keep track of performance
+ * characteristics.
+ */
