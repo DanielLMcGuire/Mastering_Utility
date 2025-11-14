@@ -10,7 +10,7 @@ cxx = "1.0"
 cxx-build = "1.0"
 
 [lib]
-name = "masteringutil-rs"
+name = "masteringutil_rs"
 path = "src/backend/rs/lib.rs"
 
 [[bin]]
