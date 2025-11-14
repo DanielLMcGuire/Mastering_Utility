@@ -1,0 +1,85 @@
+/**
+ * @page MasteringUtilityCXXPage Mastering Utility C++ Library Overview
+ *
+ * @section intro_sec Overview
+ * The Mastering Utility provides a simple workflow for batch mastering audio
+ * using ffmpeg. It reads album and song metadata from a custom markup file,
+ * processes each track, embeds metadata and album art, and writes output files
+ * into the specified directories. A caching system prevents unnecessary
+ * reencoding when source files or markup have not changed.
+ *
+ * @section markup_sec Markup Format
+ * The markup file defines albums and their songs using a lightweight syntax:
+ *
+ * @code
+ * album 1 ( "Album Name", "Artist", "Copyright",
+ *           "cover.jpg", "./", "./new", "Genre", "2025", "Comment" )
+ * {
+ *     song 1 ( "Song Title", "Artist", 1,
+ *              "input.wav", "output.mp3", "libmp3lame",
+ *              "Genre", "2025", "Track comment" )
+ * }
+ * @endcode
+ *
+ * Each album block contains one or more songs. All fields may be quoted and
+ * whitespace is automatically trimmed.
+ *
+ * @section features_sec Features
+ * - Parses album and song metadata from the custom markup format  
+ * - Validates audio codecs by querying ffmpeg  
+ * - Applies metadata tags (title, artist, album, genre, year, copyright, etc)  
+ * - Embeds album art when supported by the chosen codec  
+ * - Handles optional custom ffmpeg arguments per album or song  
+ * - Uses a hash based cache to skip reprocessing unchanged files  
+ * - Writes updated markup files back to disk  
+ *
+ * @section processing_sec Processing Workflow
+ * The typical workflow is:
+ * 1. Load the markup file  
+ * 2. Parse albums and songs  
+ * 3. For each album:  
+ *      - Create output directories  
+ *      - Copy album art when needed  
+ *      - Compare file hashes with the cache  
+ * 4. For each song:  
+ *      - Validate codec  
+ *      - Construct an ffmpeg command  
+ *      - Apply metadata and album art  
+ *      - Execute encoding  
+ * 5. Save updated caches
+ *
+ * @section cache_sec Caching System
+ * Each album stores a small cache file in:
+ * @code
+ * <NewPath>/.mas/<AlbumID>.masc
+ * @endcode
+ *
+ * The cache tracks:
+ * - A hash of the markup file  
+ * - A list of songs and their input file hashes  
+ *
+ * If the markup or input file changes, the song is reencoded. Otherwise, it is skipped.
+ *
+ * @section requirements_sec Requirements
+ * - ffmpeg must be installed and available in PATH  
+ * - The markup format must be syntactically valid  
+ * - Codec names must be supported by ffmpeg  
+ *
+ * @section usage_sec Usage Summary
+ * - Provide a markup file describing albums and songs  
+ * - Run the utility to process all audio  
+ * - Modify metadata and regenerate the markup as needed  
+ * - Rerun the tool to pick up changes; unchanged files are skipped automatically  
+ *
+ * @section example_sec Minimal Example
+ * @code{.cpp}
+ * MasteringUtility util;
+ * util.Master("album.mas");
+ * @endcode
+ *
+ * @section notes_sec Notes
+ * - Additional ffmpeg arguments are sanitized to prevent injection  
+ * - Album level arguments apply to all songs unless overridden  
+ * - Song level arguments override album arguments  
+ *
+ */

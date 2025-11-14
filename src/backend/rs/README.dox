@@ -1,0 +1,461 @@
+/**
+ * @page MasteringUtilityRustPage Mastering Utility Rust API Overview
+ *
+ * @section intro_sec Overview
+ * The Mastering Utility provides a simple workflow for batch mastering audio
+ * using ffmpeg. It reads album and song metadata from a custom markup file,
+ * processes each track, embeds metadata and album art, and writes output files
+ * into the specified directories. A caching system prevents unnecessary
+ * reencoding when source files or markup have not changed.
+ *
+ * This Rust API provides safe bindings to the underlying C++ implementation via CXX.
+ *
+ * @section getting_started Getting Started
+ * @code{.rs}
+ * use mastering_util::ffi;
+ *
+ * // Create a new wrapper instance
+ * let mut wrapper = ffi::create();
+ *
+ * // Parse a markup file
+ * wrapper.pin_mut().ParseMarkup("albums.txt");
+ *
+ * // Process all albums
+ * let album_count = wrapper.pin_mut().AlbumCount();
+ * for i in 0..album_count {
+ *     wrapper.pin_mut().ProcessAlbum(i);
+ * }
+ *
+ * // Save changes back to markup
+ * wrapper.pin_mut().SaveMarkup("albums_updated.txt");
+ * @endcode
+ *
+ * @section markup_sec Markup Format
+ * The markup file defines albums and their songs using a lightweight syntax:
+ *
+ * @code
+ * album 1 ( "Album Name", "Artist", "Copyright",
+ *           "cover.jpg", "./", "./new", "Genre", "2025", "Comment" )
+ * {
+ *     song 1 ( "Song Title", "Artist", 1,
+ *              "input.wav", "output.mp3", "libmp3lame",
+ *              "Genre", "2025", "Track comment" )
+ * }
+ * @endcode
+ *
+ * Each album block contains one or more songs. All fields may be quoted and
+ * whitespace is automatically trimmed.
+ *
+ * @section api_reference API Reference
+ *
+ * @subsection core_ops Core Operations
+ *
+ * @par create() -> UniquePtr<MasteringUtilWrapper>
+ * Creates a new MasteringUtilWrapper instance.
+ * @code{.rs}
+ * let wrapper = ffi::create();
+ * @endcode
+ *
+ * @par Master(&self, markup_file: &str)
+ * Complete workflow: parses the markup file and processes all albums and songs.
+ * @code{.rs}
+ * wrapper.Master("albums.txt");
+ * @endcode
+ *
+ * @par ParseMarkup(self: Pin<&mut Self>, markup_file: &str)
+ * Parses a markup file and loads albums into memory.
+ * @code{.rs}
+ * wrapper.pin_mut().ParseMarkup("albums.txt");
+ * @endcode
+ *
+ * @par SaveMarkup(self: Pin<&mut Self>, markup_file: &str)
+ * Saves the current album data back to a markup file.
+ * @code{.rs}
+ * wrapper.pin_mut().SaveMarkup("albums_updated.txt");
+ * @endcode
+ *
+ * @subsection processing Processing Operations
+ *
+ * @par ProcessAlbum(self: Pin<&mut Self>, index: usize)
+ * Processes all songs in the album at the given index.
+ * @param index Album index (0-based)
+ * @code{.rs}
+ * wrapper.pin_mut().ProcessAlbum(0);
+ * @endcode
+ *
+ * @par ProcessSong(self: Pin<&mut Self>, album_index: usize, song_index: usize)
+ * Processes a single song using ffmpeg with the appropriate metadata and settings.
+ * @param album_index Album index (0-based)
+ * @param song_index Song index within the album (0-based)
+ * @code{.rs}
+ * wrapper.pin_mut().ProcessSong(0, 0);
+ * @endcode
+ *
+ * @subsection queries Collection Queries
+ *
+ * @par AlbumCount(self: Pin<&mut Self>) -> usize
+ * Returns the number of albums currently loaded.
+ * @return Number of albums
+ * @code{.rs}
+ * let count = wrapper.pin_mut().AlbumCount();
+ * @endcode
+ *
+ * @par SongCount(self: Pin<&mut Self>, album_index: usize) -> usize
+ * Returns the number of songs in the specified album.
+ * @param album_index Album index (0-based)
+ * @return Number of songs in the album, or 0 if index is out of bounds
+ * @code{.rs}
+ * let count = wrapper.pin_mut().SongCount(0);
+ * @endcode
+ *
+ * @subsection album_getters Album Getters
+ * All album getters return empty string or 0 if the index is out of bounds.
+ *
+ * @par GetAlbumID(&self, album_index: usize) -> i32
+ * @param album_index Album index (0-based)
+ * @return Album ID
+ *
+ * @par GetAlbumTitle(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album title
+ *
+ * @par GetAlbumArtist(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album artist
+ *
+ * @par GetAlbumGenre(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album genre
+ *
+ * @par GetAlbumYear(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album year
+ *
+ * @par GetAlbumComment(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album comment
+ *
+ * @par GetAlbumArguments(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Additional ffmpeg arguments for the album
+ *
+ * @par GetAlbumCopyright(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album copyright information
+ *
+ * @par GetAlbumPath(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album source path
+ *
+ * @par GetAlbumNewPath(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album output path
+ *
+ * @par GetAlbumAlbumArt(&self, album_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @return Album art file path
+ *
+ * @subsection album_setters Album Setters
+ * All album setters are no-op if the index is out of bounds.
+ * All setters require Pin<&mut Self> to ensure memory safety across the FFI boundary.
+ *
+ * @par SetAlbumID(self: Pin<&mut Self>, album_index: usize, id: i32)
+ * @param album_index Album index (0-based)
+ * @param id New album ID
+ *
+ * @par SetAlbumTitle(self: Pin<&mut Self>, album_index: usize, title: &str)
+ * @param album_index Album index (0-based)
+ * @param title New album title
+ *
+ * @par SetAlbumArtist(self: Pin<&mut Self>, album_index: usize, artist: &str)
+ * @param album_index Album index (0-based)
+ * @param artist New album artist
+ *
+ * @par SetAlbumGenre(self: Pin<&mut Self>, album_index: usize, genre: &str)
+ * @param album_index Album index (0-based)
+ * @param genre New album genre
+ *
+ * @par SetAlbumYear(self: Pin<&mut Self>, album_index: usize, year: &str)
+ * @param album_index Album index (0-based)
+ * @param year New album year
+ *
+ * @par SetAlbumComment(self: Pin<&mut Self>, album_index: usize, comment: &str)
+ * @param album_index Album index (0-based)
+ * @param comment New album comment
+ *
+ * @par SetAlbumArguments(self: Pin<&mut Self>, album_index: usize, arguments: &str)
+ * @param album_index Album index (0-based)
+ * @param arguments New ffmpeg arguments for the album
+ *
+ * @par SetAlbumCopyright(self: Pin<&mut Self>, album_index: usize, copyright: &str)
+ * @param album_index Album index (0-based)
+ * @param copyright New album copyright information
+ *
+ * @par SetAlbumPath(self: Pin<&mut Self>, album_index: usize, path: &str)
+ * @param album_index Album index (0-based)
+ * @param path New album source path
+ *
+ * @par SetAlbumNewPath(self: Pin<&mut Self>, album_index: usize, new_path: &str)
+ * @param album_index Album index (0-based)
+ * @param new_path New album output path
+ *
+ * @par SetAlbumAlbumArt(self: Pin<&mut Self>, album_index: usize, album_art: &str)
+ * @param album_index Album index (0-based)
+ * @param album_art New album art file path
+ *
+ * @subsection song_getters Song Getters
+ * All song getters return empty string or 0 if indices are out of bounds.
+ *
+ * @par GetSongID(&self, album_index: usize, song_index: usize) -> i32
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song ID
+ *
+ * @par GetSongTitle(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song title
+ *
+ * @par GetSongArtist(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song artist
+ *
+ * @par GetSongAlbum(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song album name
+ *
+ * @par GetSongGenre(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song genre
+ *
+ * @par GetSongYear(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song year
+ *
+ * @par GetSongComment(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song comment
+ *
+ * @par GetSongArguments(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Additional ffmpeg arguments for the song
+ *
+ * @par GetSongCopyright(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song copyright information
+ *
+ * @par GetSongPath(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song source file path
+ *
+ * @par GetSongNewPath(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song output file path
+ *
+ * @par GetSongCodec(&self, album_index: usize, song_index: usize) -> String
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song codec (e.g., "libmp3lame")
+ *
+ * @par GetSongTrackNumber(&self, album_index: usize, song_index: usize) -> i32
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @return Song track number
+ *
+ * @subsection song_setters Song Setters
+ * All song setters are no-op if indices are out of bounds.
+ * All setters require Pin<&mut Self> to ensure memory safety across the FFI boundary.
+ *
+ * @par SetSongID(self: Pin<&mut Self>, album_index: usize, song_index: usize, id: i32)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param id New song ID
+ *
+ * @par SetSongTitle(self: Pin<&mut Self>, album_index: usize, song_index: usize, title: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param title New song title
+ *
+ * @par SetSongArtist(self: Pin<&mut Self>, album_index: usize, song_index: usize, artist: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param artist New song artist
+ *
+ * @par SetSongAlbum(self: Pin<&mut Self>, album_index: usize, song_index: usize, album: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param album New album name for the song
+ *
+ * @par SetSongGenre(self: Pin<&mut Self>, album_index: usize, song_index: usize, genre: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param genre New song genre
+ *
+ * @par SetSongYear(self: Pin<&mut Self>, album_index: usize, song_index: usize, year: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param year New song year
+ *
+ * @par SetSongComment(self: Pin<&mut Self>, album_index: usize, song_index: usize, comment: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param comment New song comment
+ *
+ * @par SetSongArguments(self: Pin<&mut Self>, album_index: usize, song_index: usize, arguments: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param arguments New ffmpeg arguments for the song
+ *
+ * @par SetSongCopyright(self: Pin<&mut Self>, album_index: usize, song_index: usize, copyright: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param copyright New song copyright information
+ *
+ * @par SetSongPath(self: Pin<&mut Self>, album_index: usize, song_index: usize, path: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param path New song source file path
+ *
+ * @par SetSongNewPath(self: Pin<&mut Self>, album_index: usize, song_index: usize, new_path: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param new_path New song output file path
+ *
+ * @par SetSongCodec(self: Pin<&mut Self>, album_index: usize, song_index: usize, codec: &str)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param codec New song codec (e.g., "libmp3lame")
+ *
+ * @par SetSongTrackNumber(self: Pin<&mut Self>, album_index: usize, song_index: usize, track_number: i32)
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @param track_number New song track number
+ *
+ * @subsection collection_mgmt Collection Management
+ *
+ * @par AddAlbum(self: Pin<&mut Self>)
+ * Adds a new empty album with an auto-incremented ID.
+ * @code{.rs}
+ * wrapper.pin_mut().AddAlbum();
+ * @endcode
+ *
+ * @par AddSong(self: Pin<&mut Self>, album_index: usize)
+ * Adds a new song to the specified album with an auto-incremented ID and track number.
+ * @param album_index Album index (0-based)
+ * @code{.rs}
+ * wrapper.pin_mut().AddSong(0);
+ * @endcode
+ *
+ * @par RemoveAlbum(self: Pin<&mut Self>, album_index: usize)
+ * Removes the album at the specified index.
+ * @param album_index Album index (0-based)
+ * @code{.rs}
+ * wrapper.pin_mut().RemoveAlbum(0);
+ * @endcode
+ *
+ * @par RemoveSong(self: Pin<&mut Self>, album_index: usize, song_index: usize)
+ * Removes the song at the specified indices.
+ * @param album_index Album index (0-based)
+ * @param song_index Song index (0-based)
+ * @code{.rs}
+ * wrapper.pin_mut().RemoveSong(0, 0);
+ * @endcode
+ *
+ * @section features_sec Features
+ * - Parses album and song metadata from the custom markup format  
+ * - Validates audio codecs by querying ffmpeg  
+ * - Applies metadata tags (title, artist, album, genre, year, copyright, etc)  
+ * - Embeds album art when supported by the chosen codec  
+ * - Handles optional custom ffmpeg arguments per album or song  
+ * - Uses a hash-based cache to skip reprocessing unchanged files  
+ * - Writes updated markup files back to disk  
+ * - Provides safe Rust bindings via CXX with proper memory management
+ *
+ * @section processing_sec Processing Workflow
+ * The typical workflow is:
+ * 1. Create a wrapper instance with ffi::create()
+ * 2. Parse albums and songs with ParseMarkup()
+ * 3. For each album:  
+ *      - Create output directories  
+ *      - Copy album art when needed  
+ *      - Compare file hashes with the cache  
+ * 4. For each song:  
+ *      - Validate codec  
+ *      - Construct an ffmpeg command  
+ *      - Apply metadata and album art  
+ *      - Execute encoding  
+ * 5. Save updated caches and optionally save updated markup with SaveMarkup()
+ *
+ * @section cache_sec Caching System
+ * Each album stores a small cache file in:
+ * @code
+ * <NewPath>/.mas/<AlbumID>.masc
+ * @endcode
+ *
+ * The cache tracks:
+ * - A hash of the markup file  
+ * - A list of songs and their input file hashes  
+ *
+ * If the markup or input file changes, the song is reencoded. Otherwise, it is skipped.
+ *
+ * @section complete_example Complete Example
+ * @code{.rs}
+ * use mastering_util::ffi;
+ *
+ * fn main() {
+ *     // Create wrapper
+ *     let mut wrapper = ffi::create();
+ *     
+ *     // Parse markup
+ *     wrapper.pin_mut().ParseMarkup("albums.txt");
+ *     
+ *     // Iterate through albums
+ *     let album_count = wrapper.pin_mut().AlbumCount();
+ *     for album_idx in 0..album_count {
+ *         let title = wrapper.GetAlbumTitle(album_idx);
+ *         let artist = wrapper.GetAlbumArtist(album_idx);
+ *         println!("Album: {} - {}", artist, title);
+ *         
+ *         // Iterate through songs
+ *         let song_count = wrapper.pin_mut().SongCount(album_idx);
+ *         for song_idx in 0..song_count {
+ *             let song_title = wrapper.GetSongTitle(album_idx, song_idx);
+ *             let track_num = wrapper.GetSongTrackNumber(album_idx, song_idx);
+ *             println!("  Track {}: {}", track_num, song_title);
+ *             
+ *             // Modify song metadata if needed
+ *             wrapper.pin_mut().SetSongYear(album_idx, song_idx, "2025");
+ *         }
+ *         
+ *         // Process the album
+ *         wrapper.pin_mut().ProcessAlbum(album_idx);
+ *     }
+ *     
+ *     // Save updated markup
+ *     wrapper.pin_mut().SaveMarkup("albums_updated.txt");
+ * }
+ * @endcode
+ *
+ * @section requirements_sec Requirements
+ * - ffmpeg must be installed and available in PATH  
+ * - The markup format must be syntactically valid  
+ * - Codec names must be supported by ffmpeg
+ * - Rust with CXX support for FFI bindings
+ *
+ * @section notes_sec Notes
+ * - Additional ffmpeg arguments are sanitized to prevent injection  
+ * - Album-level arguments apply to all songs unless overridden  
+ * - Song-level arguments override album arguments
+ * - All setters require Pin<&mut Self> to ensure memory safety across the FFI boundary
+ * - Getters only require &self as they don't mutate state
+ * - The wrapper uses UniquePtr for automatic memory management
+ */
