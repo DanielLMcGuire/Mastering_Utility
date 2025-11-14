@@ -1,5 +1,5 @@
-album 1 ("Test Album", "Daniel McGuire", "(C) Daniel McGuire", ""test.png"", ""."", ""./out"", "Test", "2025")
+album 1 ("Test Album", "Daniel McGuire", "(C) Daniel McGuire", "test.png", ".", "./out", "Test", "2025")
 {
-    song 1 ("Test", "Daniel McGuire", 1, ""test.wav"", ""test.mp3"", "mp3", "Test", "2025")
+    song 1 ("Test", "Daniel McGuire", 1, "test.wav", "test.mp3", "mp3", "Test", "2025")
 }
 
