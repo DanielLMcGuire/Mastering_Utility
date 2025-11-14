@@ -12,22 +12,22 @@
  *
  * @section getting_started Getting Started
  * @code{.rs}
- * use mastering_util::ffi;
+ * use masteringutil_rs::ffi;
  *
  * // Create a new wrapper instance
- * let mut wrapper = ffi::create();
+ * let mut masterer = ffi::create();
  *
  * // Parse a markup file
- * wrapper.pin_mut().ParseMarkup("albums.txt");
+ * masterer.pin_mut().ParseMarkup("albums.txt");
  *
  * // Process all albums
- * let album_count = wrapper.pin_mut().AlbumCount();
+ * let album_count = masterer.pin_mut().AlbumCount();
  * for i in 0..album_count {
- *     wrapper.pin_mut().ProcessAlbum(i);
+ *     masterer.pin_mut().ProcessAlbum(i);
  * }
  *
  * // Save changes back to markup
- * wrapper.pin_mut().SaveMarkup("albums_updated.txt");
+ * masterer.pin_mut().SaveMarkup("albums.mas");
  * @endcode
  *
  * @section markup_sec Markup Format
