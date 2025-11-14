@@ -30,11 +30,20 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
 
 set(MASTERINGUTIL_SOURCES
-    src/backend/MasteringUtil.cpp
+    src/backend/cpp/MasteringUtil.cpp
 )
+
 set(TESTS_SOURCES
-    src/frontend/tests.cpp
+    src/frontend/tests/cpp/tests.cpp
 )
+
+set(LAUNCHER_SOURCES
+    src/frontend/launcher/cpp/launcher.cpp
+)
+
+set(WIZARD_SOURCES
+    src/frontend/wizard/cpp/wizard.cpp
+) 
 
 include(FetchContent)
 
@@ -49,14 +58,26 @@ FetchContent_MakeAvailable(DConsole)
 add_library(masteringutil STATIC ${MASTERINGUTIL_SOURCES})
 
 target_include_directories(masteringutil PUBLIC
-    ${CMAKE_SOURCE_DIR}/src/backend
+    ${CMAKE_SOURCE_DIR}/src/backend/cpp
 )
 
 target_link_libraries(masteringutil)
-
+set_target_properties(masteringutil PROPERTIES OUTPUT_NAME masteringutil-cpp)
 
 add_executable(masteringutil_tests ${TESTS_SOURCES})
 target_link_libraries(masteringutil_tests
 	PRIVATE masteringutil DConsole
 )
 set_target_properties(masteringutil_tests PROPERTIES OUTPUT_NAME MasteringTests)
+
+add_executable(masteringutil_wizard ${WIZARD_SOURCES})
+target_link_libraries(masteringutil_wizard
+	PRIVATE masteringutil DConsole
+)
+set_target_properties(masteringutil_wizard PROPERTIES OUTPUT_NAME MasteringWizard-cpp)
+
+add_executable(masteringutil_launcher ${LAUNCHER_SOURCES})
+target_link_libraries(masteringutil_launcher
+	PRIVATE masteringutil DConsole
+)
+set_target_properties(masteringutil_launcher PROPERTIES OUTPUT_NAME MasteringUtility-cpp)
