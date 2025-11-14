@@ -13,7 +13,7 @@
  // You should have received a copy of the GNU General Public License
  // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use masteringutil::ffi::{self, MasteringUtilWrapper};
+use masteringutil_rs::ffi::{self, MasteringUtilWrapper};
 use std::env;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
