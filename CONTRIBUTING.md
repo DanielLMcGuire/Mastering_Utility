@@ -9,7 +9,7 @@ Thanks for wanting to contribute! Feel free to contribute to this file as well a
   * **Frontend (Rust wrapper and utilities)**: C++ + Rust knowledge required.
 * Must understand basic [doxygen syntax](https://www.doxygen.nl/manual/docblocks.html).
 
-## Code Style
+## Code Style (if language allows)
 
 * Keep code **readable**; functionality should be clear without comments.
 * Use **Allman style (with brackets on the line after function declarations)**.
@@ -17,6 +17,7 @@ Thanks for wanting to contribute! Feel free to contribute to this file as well a
 * Avoid comments unless something truly cannot be understood.
 * AI-generated code is allowed but **must be reviewed** and flagged in the commit description.
 * New C++ public members require Doxygen comments.
+* Run rustfmt on all rust code before commiting.
 ```cpp
 /**
  * @brief Example Function
@@ -51,13 +52,13 @@ fn example_function(a: i32) -> i32
 ## Testing
 
 * Updating tests is recommended but not strictly enforced yet.
-* For **C++ changes**, if `src/frontend/tests.cpp` needs updates to pass, do so.
+* For **C++ changes**, if `src/frontend/tests.cpp` needs logical updates to pass, do so.
 * Pull requests will trigger **automatic CI checks**.
 
 ## Issues
 
 * Use the provided **issue templates**.
-* Labels are mostly managed automatically; users can mark **bug** or **enhancement**.
+* Labels are mostly managed automatically; users can mark **bug**, **enhancement**, or **Parity**.
 
 ## Dependencies
 
