@@ -481,12 +481,11 @@ void MasteringUtility::ProcessSong(const Song& song, const Album& album)
 		std::filesystem::create_directories(new_songPath.parent_path());
 
 		std::ostringstream cmd;
-		std::filesystem::path albumArt = album.Path / album.AlbumArt;
 		cmd << "ffmpeg -y "
 			<< "-i \"" << song.Path.string() << "\" ";
 		if (song.Codec != "flac" && song.Codec != "FLAC" && song.Codec != "wav" && song.Codec != "WAV")
 			if (!song.Codec.empty() && !album.AlbumArt.empty())
-				cmd << "-i \"" << albumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
+				cmd << "-i \"" << album.AlbumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
 		if (!song.Title.empty())      cmd << "-metadata title=\"" << song.Title << "\" ";
 		if (!song.Artist.empty())     cmd << "-metadata artist=\"" << song.Artist << "\" ";
 		if (!song.Album.empty())      cmd << "-metadata album=\"" << song.Album << "\" ";
