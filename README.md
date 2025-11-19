@@ -15,7 +15,7 @@ C++ 20 / Rust library for audio tagging using a metadata markup format and a Wiz
 ## Download
 
 - **Windows**: 64-bit installers on the [Releases page](https://github.com/DanielLMcGuire/Mastering_Utility/releases/latest)
-- **macOS / Linux**: Artifacts from the latest GitHub Actions build: [Rust](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cargo-multi-platform.yml?query=event%3Apush+branch%3Amaster+is%3Asuccess) [C++](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml?query=event%3Apush+branch%3Amaster+is%3Asuccess)
+- **Windows / macOS / Linux**: 64-bit artifacts from the latest GitHub Actions build: [Rust](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cargo-multi-platform.yml?query=event%3Apush+branch%3Amaster+is%3Asuccess) [C++](https://github.com/DanielLMcGuire/Mastering_Utility/actions/workflows/cmake-multi-platform.yml?query=event%3Apush+branch%3Amaster+is%3Asuccess)
 - **Build from source**: See below
 
 ## Prerequisites
