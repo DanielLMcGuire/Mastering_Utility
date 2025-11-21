@@ -1,0 +1,8 @@
+node_modules/**
+!node_modules/vscode-languageclient/**
+!node_modules/vscode-languageserver/**
+.vscode/**
+.git/**
+src/**
+tests/**
+npm-debug.log
