@@ -9,13 +9,13 @@
 		"url": "https://github.com/DanielLMcGuire/Mastering_Utility.git"
 	},
 	"engines": {
-		"vscode": "^1.105.0"
+		"vscode": "^1.104.0"
 	},
 	"categories": [
 		"Other"
 	],
 	"activationEvents": [
-	  "onLanguage:mas"
+		"onLanguage:mas"
 	],
 	"main": "./extension.js",
 	"contributes": {
