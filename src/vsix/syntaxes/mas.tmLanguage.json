@@ -1,0 +1,138 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Mastering Markup",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#album"
+    },
+    {
+      "include": "#song"
+    },
+    {
+      "include": "#braces"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.semicolon.mas",
+          "match": ";.*$"
+        },
+        {
+          "name": "comment.block.bracket.mas",
+          "begin": "\\[",
+          "end": "\\]"
+        }
+      ]
+    },
+    "album": {
+      "patterns": [
+        {
+          "name": "meta.album.mas",
+          "begin": "\\b(album)\\s+(\\d+)\\s*\\(",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.album.mas"
+            },
+            "2": {
+              "name": "constant.numeric.album-id.mas"
+            }
+          },
+          "end": "\\)",
+          "patterns": [
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "name": "punctuation.separator.comma.mas",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+    "song": {
+      "patterns": [
+        {
+          "name": "meta.song.mas",
+          "begin": "\\b(song)\\s+(\\d+)\\s*\\(",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.song.mas"
+            },
+            "2": {
+              "name": "constant.numeric.song-id.mas"
+            }
+          },
+          "end": "\\)",
+          "patterns": [
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#numbers"
+            },
+            {
+              "include": "#codecs"
+            },
+            {
+              "name": "punctuation.separator.comma.mas",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.mas",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.mas",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.mas",
+          "match": "\\b\\d+\\b"
+        }
+      ]
+    },
+    "codecs": {
+      "patterns": [
+        {
+          "name": "support.type.codec.mas",
+          "match": "\\b(libmp3lame|aac|libopus|libvorbis|flac|alac|wavpack|copy|mp3|wav|WAV|FLAC)\\b"
+        }
+      ]
+    },
+    "braces": {
+      "patterns": [
+        {
+          "name": "punctuation.section.block.begin.mas",
+          "match": "\\{"
+        },
+        {
+          "name": "punctuation.section.block.end.mas",
+          "match": "\\}"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.mas"
+}
