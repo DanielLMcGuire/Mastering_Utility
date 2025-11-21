@@ -23,21 +23,11 @@ Thanks for wanting to contribute! Feel free to contribute to this file as well a
  * @param a Parameter a
  * Adds a + 5 if a >= 5
  */
-int exampleFunction(int a)
-{
+int exampleFunction(int a) {
     if (a >= 5)
         return a + 5;
     else
         return 0;
-}
-```
-```rust
-fn example_function(a: i32) -> i32
-{
-    if a >= 5
-        a + 5
-    else
-        0
 }
 ```
 
