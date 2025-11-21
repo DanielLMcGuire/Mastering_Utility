@@ -19,10 +19,10 @@ endif()
 
 if(MSVC)
     add_compile_options(/EHsc)
-    set(RELEASE_FLAGS "/O2 /GL /Gy /GS /Oi /analyze-")
+    set(RELEASE_FLAGS "/O2 /GL /Gy /GS /Oi /analyze- /W4")
     set(DEBUG_FLAGS "/Zi /Od /RTC1")
 else()
-    set(RELEASE_FLAGS "-O3 -mtune=generic -pipe -flto -fvisibility=hidden -ffunction-sections -fdata-sections -fstack-protector-strong -fomit-frame-pointer")
+    set(RELEASE_FLAGS "-O3 -mtune=generic -pipe -flto -fvisibility=hidden -ffunction-sections -fdata-sections -fstack-protector-strong -fomit-frame-pointer -Wall -Wextra -Wpedantic")
     set(DEBUG_FLAGS "-g -O0")
 endif()
 
