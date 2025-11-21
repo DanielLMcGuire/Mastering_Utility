@@ -3,7 +3,7 @@
 	"name": "mastering-utility-markup",
 	"displayName": "Mastering Utility Markup",
 	"description": "Provides Mastering Utility Markup support to VSCode",
-	"version": "0.0.1",
+	"version": "2.0.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/DanielLMcGuire/Mastering_Utility.git"
@@ -13,6 +13,9 @@
 	},
 	"categories": [
 		"Other"
+	],
+	"activationEvents": [
+	  "onLanguage:mas"
 	],
 	"main": "./extension.js",
 	"contributes": {
