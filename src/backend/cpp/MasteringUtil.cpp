@@ -31,6 +31,9 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <algorithm>
+#include <cctype>
+
 /**
  * @brief Grab file modifed information
  * @param filePath File
