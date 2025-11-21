@@ -12,7 +12,6 @@ Thanks for wanting to contribute! Feel free to contribute to this file as well a
 ## Code Style (if language allows)
 
 * Keep code **readable**; functionality should be clear without comments.
-* Use **Allman style (with brackets on the line after function declarations)**.
 * For **single-line** if/else statements, **do not use brackets**.
 * Avoid comments unless something truly cannot be understood.
 * AI-generated code is allowed but **must be reviewed** and flagged in the commit description.
