@@ -688,7 +688,7 @@ std::filesystem::path MasteringUtility::getCacheFilePath(const Album &album) con
 	// See info on file streams in NTFS:
 	// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c54dec26-1551-4d3a-a0ea-4fa40f848eb3
 	return NTFS(album.markup) ? album.NewPath.string() + ":MASC" + std::to_string(album.ID)
-	                          : album.NewPath / ".mas" / std::string(std::to_string(album.ID) + ".masc");
+	                          : (album.NewPath / ".mas" / (std::to_string(album.ID) + ".masc")).string();
 }
 void MasteringUtility::loadCache(const Album &album)
 {
