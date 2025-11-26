@@ -26,34 +26,41 @@
 #include <string>
 
 /// @brief CRT Entry Point
-int main(int argc, char *argv[]) {
-  std::cout << "Daniel's Mastering Utility -- Masterer\n";
+int main(int argc, char *argv[])
+{
+	std::cout << "Daniel's Mastering Utility -- Masterer\n";
 
-  MasteringUtility masterer;
+	MasteringUtility masterer;
 
-  DConsole conlib;
-  conlib.supressUnknownArgument = true;
-  conlib.registerFlag("help", DConsole::f::boolean, 'h');
-  conlib.registerFlag("markupfile", DConsole::f::string, 'f');
+	DConsole conlib;
+	conlib.supressUnknownArgument = true;
+	conlib.registerFlag("help", DConsole::f::boolean, 'h');
+	conlib.registerFlag("markupfile", DConsole::f::string, 'f');
 
-  conlib.parse(argc, argv);
+	conlib.parse(argc, argv);
 
-  std::filesystem::path markupPath{conlib.f_string("markupfile")};
-  if (markupPath.empty()) {
-    if (argc > 1 && std::filesystem::exists(argv[1]))
-      markupPath = argv[1];
-    else
-      return 1;
-  }
-  try {
-    masterer.Master(markupPath);
-    std::cout << "Mastering finished!\n";
-  } catch (const std::exception &ex) {
-    std::cerr << "Error during mastering: " << ex.what() << "\n";
-    return 1;
-  } catch (...) {
-    std::cerr << "Unknown error during mastering.\n";
-    return -1;
-  }
-  return 0;
+	std::filesystem::path markupPath{conlib.f_string("markupfile")};
+	if (markupPath.empty())
+	{
+		if (argc > 1 && std::filesystem::exists(argv[1]))
+			markupPath = argv[1];
+		else
+			return 1;
+	}
+	try
+	{
+		masterer.Master(markupPath);
+		std::cout << "Mastering finished!\n";
+	}
+	catch (const std::exception &ex)
+	{
+		std::cerr << "Error during mastering: " << ex.what() << "\n";
+		return 1;
+	}
+	catch (...)
+	{
+		std::cerr << "Unknown error during mastering.\n";
+		return -1;
+	}
+	return 0;
 }

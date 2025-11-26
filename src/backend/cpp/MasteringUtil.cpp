@@ -20,7 +20,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "MasteringUtil.h"
+#include <algorithm>
 #include <array>
+#include <cctype>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -31,31 +33,29 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
-#include <algorithm>
-#include <cctype>
 
 /**
  * @brief Grab file modifed information
  * @param filePath File
  * @returns information
  */
-static std::string calculateFileHash(const std::filesystem::path &filePath) {
-  if (!std::filesystem::exists(filePath))
-    return "";
+static std::string calculateFileHash(const std::filesystem::path &filePath)
+{
+	if (!std::filesystem::exists(filePath))
+		return "";
 
-  std::error_code ec;
-  auto fileSize = std::filesystem::file_size(filePath, ec);
-  if (ec)
-    return "";
+	std::error_code ec;
+	auto            fileSize = std::filesystem::file_size(filePath, ec);
+	if (ec)
+		return "";
 
-  auto ftime = std::filesystem::last_write_time(filePath, ec);
-  if (ec)
-    return "";
-  std::stringstream ss;
-  ss << std::hex << std::setw(8) << std::setfill('0') << fileSize << std::hex
-     << std::setw(16) << std::setfill('0')
-     << (unsigned long long)ftime.time_since_epoch().count();
-  return ss.str();
+	auto ftime = std::filesystem::last_write_time(filePath, ec);
+	if (ec)
+		return "";
+	std::stringstream ss;
+	ss << std::hex << std::setw(8) << std::setfill('0') << fileSize << std::hex << std::setw(16) << std::setfill('0')
+	   << (unsigned long long)ftime.time_since_epoch().count();
+	return ss.str();
 }
 
 /**
@@ -63,72 +63,78 @@ static std::string calculateFileHash(const std::filesystem::path &filePath) {
  * Requests audio codecs from FFMPEG
  * @return set of audio codecs
  */
-static std::unordered_set<std::string> getAudioCodecs() {
-  std::unordered_set<std::string> audioCodecs;
+static std::unordered_set<std::string> getAudioCodecs()
+{
+	std::unordered_set<std::string> audioCodecs;
 
-  audioCodecs.insert("copy");
-  audioCodecs.insert("libmp3lame");
-  const char *cmd = "ffmpeg -loglevel error -codecs";
+	audioCodecs.insert("copy");
+	audioCodecs.insert("libmp3lame");
+	const char *cmd = "ffmpeg -loglevel error -codecs";
 
-  // Custom deleter for FILE* to ensure pclose is called
-  struct FileCloser {
-    void operator()(FILE *f) const {
+	// Custom deleter for FILE* to ensure pclose is called
+	struct FileCloser
+	{
+		void operator()(FILE *f) const
+		{
 #ifdef _WIN32
-      _pclose(f);
+			_pclose(f);
 #else
-      pclose(f);
+			pclose(f);
 #endif
-    }
-  };
+		}
+	};
 
 #ifdef _WIN32
-  std::unique_ptr<FILE, FileCloser> pipe(_popen(cmd, "r"));
+	std::unique_ptr<FILE, FileCloser> pipe(_popen(cmd, "r"));
 #else
-  std::unique_ptr<FILE, FileCloser> pipe(popen(cmd, "r"));
+	std::unique_ptr<FILE, FileCloser> pipe(popen(cmd, "r"));
 #endif
 
-  if (!pipe) {
-    std::cerr << "Failed to run ffmpeg command\n";
-    return audioCodecs;
-  }
+	if (!pipe)
+	{
+		std::cerr << "Failed to run ffmpeg command\n";
+		return audioCodecs;
+	}
 
-  std::array<char, 2048> buffer;
-  bool parsing = false;
+	std::array<char, 2048> buffer;
+	bool                   parsing = false;
 
-  while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get())) {
-    std::string line(buffer.data());
+	while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe.get()))
+	{
+		std::string line(buffer.data());
 
-    if (!parsing) {
-      if (line.find("Codecs:") != std::string::npos)
-        parsing = true;
-      continue;
-    }
+		if (!parsing)
+		{
+			if (line.find("Codecs:") != std::string::npos)
+				parsing = true;
+			continue;
+		}
 
-    if (line.find("-------") != std::string::npos)
-      continue;
+		if (line.find("-------") != std::string::npos)
+			continue;
 
-    size_t firstChar = line.find_first_not_of(" \t");
-    if (firstChar == std::string::npos)
-      continue;
-    line = line.substr(firstChar);
+		size_t firstChar = line.find_first_not_of(" \t");
+		if (firstChar == std::string::npos)
+			continue;
+		line = line.substr(firstChar);
 
-    if (line.size() < 7)
-      continue;
+		if (line.size() < 7)
+			continue;
 
-    std::string flags = line.substr(0, 6);
-    if (flags.size() >= 3 && flags[0] == 'D' && flags[1] == 'E' &&
-        flags[2] == 'A') {
-      size_t nameStart = line.find_first_not_of(" \t", 6);
-      if (nameStart == std::string::npos)
-        continue;
-      size_t nameEnd = line.find_first_of(" \t", nameStart);
-      std::string codecName = line.substr(nameStart, nameEnd - nameStart);
+		std::string flags = line.substr(0, 6);
+		if (flags.size() >= 3 && flags[0] == 'D' && flags[1] == 'E' && flags[2] == 'A')
+		{
+			size_t nameStart = line.find_first_not_of(" \t", 6);
+			if (nameStart == std::string::npos)
+				continue;
+			size_t      nameEnd = line.find_first_of(" \t", nameStart);
+			std::string codecName = line.substr(nameStart, nameEnd - nameStart);
 
-      audioCodecs.insert(codecName);
-    }
-  }
+			audioCodecs.insert(codecName);
+		}
+	}
 
-  return audioCodecs;
+	return audioCodecs;
 }
 
 /**
@@ -136,11 +142,11 @@ static std::unordered_set<std::string> getAudioCodecs() {
  * @param input String to trim
  * @return Trimmed string
  */
-static std::string trim(const std::string &input) {
-  auto start = input.find_first_not_of(" \t\r\n");
-  auto end = input.find_last_not_of(" \t\r\n");
-  return (start == std::string::npos) ? ""
-                                      : input.substr(start, end - start + 1);
+static std::string trim(const std::string &input)
+{
+	auto start = input.find_first_not_of(" \t\r\n");
+	auto end = input.find_last_not_of(" \t\r\n");
+	return (start == std::string::npos) ? "" : input.substr(start, end - start + 1);
 }
 
 /**
@@ -151,13 +157,14 @@ static std::string trim(const std::string &input) {
  * @param input String to clean
  * @return Cleaned string
  */
-static std::string cleanString(const std::string &input) {
-  std::string out = trim(input);
-  if (!out.empty() && out.front() == '"')
-    out.erase(out.begin());
-  if (!out.empty() && out.back() == '"')
-    out.pop_back();
-  return out;
+static std::string cleanString(const std::string &input)
+{
+	std::string out = trim(input);
+	if (!out.empty() && out.front() == '"')
+		out.erase(out.begin());
+	if (!out.empty() && out.back() == '"')
+		out.pop_back();
+	return out;
 }
 
 /**
@@ -168,26 +175,33 @@ static std::string cleanString(const std::string &input) {
  * @param input String containing arguments
  * @return Vector containing arguments
  */
-static std::vector<std::string> splitArgs(const std::string &input) {
-  std::vector<std::string> args;
-  std::string current;
-  bool inQuotes = false;
+static std::vector<std::string> splitArgs(const std::string &input)
+{
+	std::vector<std::string> args;
+	std::string              current;
+	bool                     inQuotes = false;
 
-  for (char c : input) {
-    if (c == '"') {
-      inQuotes = !inQuotes;
-      continue;
-    } else if (c == ',' && !inQuotes) {
-      args.push_back(trim(current));
-      current.clear();
-    } else {
-      current.push_back(c);
-    }
-  }
+	for (char c : input)
+	{
+		if (c == '"')
+		{
+			inQuotes = !inQuotes;
+			continue;
+		}
+		else if (c == ',' && !inQuotes)
+		{
+			args.push_back(trim(current));
+			current.clear();
+		}
+		else
+		{
+			current.push_back(c);
+		}
+	}
 
-  if (!current.empty())
-    args.push_back(trim(current));
-  return args;
+	if (!current.empty())
+		args.push_back(trim(current));
+	return args;
 }
 
 /**
@@ -199,467 +213,519 @@ static std::vector<std::string> splitArgs(const std::string &input) {
  * @param args Raw arguments string
  * @return Sanitized arguments string
  */
-static std::string sanitizeArguments(const std::string &args,
-                                     const bool preventOverwrite = false) {
+static std::string sanitizeArguments(const std::string &args, const bool preventOverwrite = false)
+{
 #ifdef _DEBUG
-  std::cout << "Specified: " << args << '\n';
+	std::cout << "Specified: " << args << '\n';
 #endif
-  if (args.empty())
-    return args;
+	if (args.empty())
+		return args;
 
-  std::string sanitized = trim(args);
+	std::string sanitized = trim(args);
 
-  std::vector<std::string> dangerousPatternsNonOverwrite = {
-      "&&", "||", "|", ";", "$(", "`", ">", "<", ">>"};
+	std::vector<std::string> dangerousPatternsNonOverwrite = {"&&", "||", "|", ";", "$(", "`", ">", "<", ">>"};
 
-  std::vector<std::string> dangerousPatternsOverwrite = {
-      "-i ",  "--input", "ffmpeg", "ffprobe", "-metadata", "-c:a", "-codec:a",
-      "-map", "&&",      "||",     "|",       ";",         "$(",   "`",
-      ">",    "<",       ">>",     "-c:v",    "-codec:v"};
+	std::vector<std::string> dangerousPatternsOverwrite = {
+	    "-i ", "--input", "ffmpeg", "ffprobe", "-metadata", "-c:a", "-codec:a", "-map", "&&", "||",
+	    "|",   ";",       "$(",     "`",       ">",         "<",    ">>",       "-y",   "-n"};
 
-  std::string lower = sanitized;
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+	std::string lower = sanitized;
+	std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
-  // Check for dangerous patterns
-  const std::vector<std::string> *patternsToCheck =
-      preventOverwrite ? &dangerousPatternsOverwrite
-                       : &dangerousPatternsNonOverwrite;
+	// Check for dangerous patterns
+	const std::vector<std::string> *patternsToCheck =
+	    preventOverwrite ? &dangerousPatternsOverwrite : &dangerousPatternsNonOverwrite;
 
-  for (const std::string &pattern : *patternsToCheck) {
-    size_t pos = lower.find(pattern);
-    while (pos != std::string::npos) {
-      // Replace or remove the dangerous pattern.
-      // For simplicity, we'll replace it with spaces or remove it.
-      // A more robust solution might involve throwing an exception or
-      // returning an error code.
-      sanitized.replace(pos, pattern.length(),
-                        std::string(pattern.length(), ' '));
-      lower.replace(pos, pattern.length(), std::string(pattern.length(), ' '));
-      pos = lower.find(pattern, pos + 1);
-    }
-  }
+	for (const std::string &pattern : *patternsToCheck)
+	{
+		size_t pos = lower.find(pattern);
+		while (pos != std::string::npos)
+		{
+			// Replace or remove the dangerous pattern.
+			// For simplicity, we'll replace it with spaces or remove it.
+			// A more robust solution might involve throwing an exception or
+			// returning an error code.
+			sanitized.replace(pos, pattern.length(), std::string(pattern.length(), ' '));
+			lower.replace(pos, pattern.length(), std::string(pattern.length(), ' '));
+			pos = lower.find(pattern, pos + 1);
+		}
+	}
 
 #ifdef _DEBUG
-  std::cout << "Cleaned: " << sanitized << '\n';
+	std::cout << "Cleaned: " << sanitized << '\n';
 #endif
-  return sanitized;
+	return sanitized;
 }
 
-void MasteringUtility::ParseMarkup(const std::filesystem::path &markupFile,
-                                   Albums &albums) {
-  try {
-    std::ifstream file(markupFile);
-    if (!file.is_open()) {
-      std::cerr << "[ParseMarkup] Could not open Markup file: " << markupFile
-                << std::endl;
-      return;
-    }
+void MasteringUtility::ParseMarkup(const std::filesystem::path &markupFile, Albums &albums)
+{
+	try
+	{
+		std::ifstream file(markupFile);
+		if (!file.is_open())
+		{
+			std::cerr << "[ParseMarkup] Could not open Markup file: " << markupFile << std::endl;
+			return;
+		}
 
-    std::string line;
-    Album currentAlbum;
-    bool insideAlbum = false;
+		std::string line;
+		Album       currentAlbum;
+		bool        insideAlbum = false;
 
-    while (std::getline(file, line)) {
-      line = trim(line);
-      if (line.empty() || line[0] == ';' || line[0] == '[')
-        continue;
+		while (std::getline(file, line))
+		{
+			line = trim(line);
+			if (line.empty() || line[0] == ';' || line[0] == '[')
+				continue;
 
-      if (line.rfind("album", 0) == 0) {
-        insideAlbum = true;
-        currentAlbum = Album();
+			if (line.rfind("album", 0) == 0)
+			{
+				insideAlbum = true;
+				currentAlbum = Album();
 
-        auto idStart = std::string("album").size();
-        auto idEnd = line.find('(');
-        if (idEnd != std::string::npos) {
-          std::string idStr = trim(line.substr(idStart, idEnd - idStart));
-          try {
-            if (!idStr.empty())
-              currentAlbum.ID = std::stoi(idStr);
-          } catch (...) {
-            std::cerr << "[ParseMarkup] Warning: invalid album ID '" << idStr
-                      << "'\n";
-          }
-        }
+				currentAlbum.markup = markupFile;
+				auto idStart = std::string("album").size();
+				auto idEnd = line.find('(');
+				if (idEnd != std::string::npos)
+				{
+					std::string idStr = trim(line.substr(idStart, idEnd - idStart));
+					try
+					{
+						if (!idStr.empty())
+							currentAlbum.ID = std::stoi(idStr);
+					}
+					catch (...)
+					{
+						std::cerr << "[ParseMarkup] Warning: invalid album ID '" << idStr << "'\n";
+					}
+				}
 
-        auto start = line.find('(');
-        auto end = line.find_last_of(')');
-        if (start != std::string::npos && end != std::string::npos) {
-          auto args = splitArgs(line.substr(start + 1, end - start - 1));
-          if (args.size() >= 8) {
-            currentAlbum.Title = cleanString(args[0]);
-            currentAlbum.Artist = cleanString(args[1]);
-            currentAlbum.Copyright = cleanString(args[2]);
-            currentAlbum.AlbumArt = cleanString(args[3]);
-            currentAlbum.Path = cleanString(args[4]);
-            currentAlbum.NewPath = cleanString(args[5]);
-            currentAlbum.Genre = cleanString(args[6]);
-            currentAlbum.Year = cleanString(args[7]);
-            if (args.size() > 8)
-              currentAlbum.Comment = cleanString(args[8]);
-            if (args.size() > 9)
-              currentAlbum.arguments = sanitizeArguments(cleanString(args[9]));
-          }
-        }
-      } else if (line.rfind("song", 0) == 0 && insideAlbum) {
-        Song song;
+				auto start = line.find('(');
+				auto end = line.find_last_of(')');
+				if (start != std::string::npos && end != std::string::npos)
+				{
+					auto args = splitArgs(line.substr(start + 1, end - start - 1));
+					if (args.size() >= 8)
+					{
+						currentAlbum.Title = cleanString(args[0]);
+						currentAlbum.Artist = cleanString(args[1]);
+						currentAlbum.Copyright = cleanString(args[2]);
+						currentAlbum.AlbumArt = cleanString(args[3]);
+						currentAlbum.Path = cleanString(args[4]);
+						currentAlbum.NewPath = cleanString(args[5]);
+						currentAlbum.Genre = cleanString(args[6]);
+						currentAlbum.Year = cleanString(args[7]);
+						if (args.size() > 8)
+							currentAlbum.Comment = cleanString(args[8]);
+						if (args.size() > 9)
+							currentAlbum.arguments = sanitizeArguments(cleanString(args[9]));
+					}
+				}
+			}
+			else if (line.rfind("song", 0) == 0 && insideAlbum)
+			{
+				Song song;
 
-        auto idStart = std::string("song").size();
-        auto idEnd = line.find('(');
-        if (idEnd != std::string::npos) {
-          std::string idStr = trim(line.substr(idStart, idEnd - idStart));
-          try {
-            if (!idStr.empty())
-              song.ID = std::stoi(idStr);
-          } catch (...) {
-            std::cerr << "[ParseMarkup] Warning: invalid song ID '" << idStr
-                      << "'\n";
-          }
-        }
+				auto idStart = std::string("song").size();
+				auto idEnd = line.find('(');
+				if (idEnd != std::string::npos)
+				{
+					std::string idStr = trim(line.substr(idStart, idEnd - idStart));
+					try
+					{
+						if (!idStr.empty())
+							song.ID = std::stoi(idStr);
+					}
+					catch (...)
+					{
+						std::cerr << "[ParseMarkup] Warning: invalid song ID '" << idStr << "'\n";
+					}
+				}
 
-        auto start = line.find('(');
-        auto end = line.find_last_of(')');
-        if (start != std::string::npos && end != std::string::npos) {
-          auto args = splitArgs(line.substr(start + 1, end - start - 1));
-          if (args.size() >= 8) {
-            song.Title = cleanString(args[0]);
-            song.Artist = cleanString(args[1]);
-            try {
-              song.TrackNumber = std::stoi(args[2]);
-            } catch (...) {
-              std::cerr << "[ParseMarkup] Warning: invalid track number '"
-                        << args[2] << "'\n";
-              song.TrackNumber = 1;
-            }
-            song.Path = cleanString(args[3]);
-            song.NewPath = cleanString(args[4]);
-            song.Codec = cleanString(args[5]);
-            song.Genre = cleanString(args[6]);
-            song.Year = cleanString(args[7]);
-            if (args.size() > 8)
-              song.Comment = cleanString(args[8]);
-            if (args.size() > 9)
-              song.arguments = sanitizeArguments(cleanString(args[9]));
-          }
-        }
+				auto start = line.find('(');
+				auto end = line.find_last_of(')');
+				if (start != std::string::npos && end != std::string::npos)
+				{
+					auto args = splitArgs(line.substr(start + 1, end - start - 1));
+					if (args.size() >= 8)
+					{
+						song.Title = cleanString(args[0]);
+						song.Artist = cleanString(args[1]);
+						try
+						{
+							song.TrackNumber = std::stoi(args[2]);
+						}
+						catch (...)
+						{
+							std::cerr << "[ParseMarkup] Warning: invalid track "
+							             "number '"
+							          << args[2] << "'\n";
+							song.TrackNumber = 1;
+						}
+						song.Path = cleanString(args[3]);
+						song.NewPath = cleanString(args[4]);
+						song.Codec = cleanString(args[5]);
+						song.Genre = cleanString(args[6]);
+						song.Year = cleanString(args[7]);
+						if (args.size() > 8)
+							song.Comment = cleanString(args[8]);
+						if (args.size() > 9)
+							song.arguments = sanitizeArguments(cleanString(args[9]));
+					}
+				}
 
-        song.Album = currentAlbum.Title;
-        song.Copyright = currentAlbum.Copyright;
+				song.Album = currentAlbum.Title;
+				song.Copyright = currentAlbum.Copyright;
 
-        currentAlbum.SongsList.push_back(song);
-      } else if (line.find("}") != std::string::npos && insideAlbum) {
-        albums.push_back(currentAlbum);
-        insideAlbum = false;
-      }
-    }
-  } catch (const std::exception &ex) {
-    std::cerr << "[ParseMarkup] Exception: " << ex.what() << std::endl;
-  } catch (...) {
-    std::cerr << "[ParseMarkup] Unknown exception" << std::endl;
-  }
+				currentAlbum.SongsList.push_back(song);
+			}
+			else if (line.find("}") != std::string::npos && insideAlbum)
+			{
+				albums.push_back(currentAlbum);
+				insideAlbum = false;
+			}
+		}
+	}
+	catch (const std::exception &ex)
+	{
+		std::cerr << "[ParseMarkup] Exception: " << ex.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "[ParseMarkup] Unknown exception" << std::endl;
+	}
 }
 
-void MasteringUtility::SaveMarkup(const Albums &albums,
-                                  const std::filesystem::path &markupFile) {
-  try {
-    std::ofstream file(markupFile);
-    if (!file.is_open()) {
-      std::cerr << "[SaveMarkup] Could not open output Markup file: "
-                << markupFile << std::endl;
-      return;
-    }
-    file << "; Mastering Utility\n";
-    for (const auto &album : albums) {
-      file << "album " << album.ID << " ("
-           << "\"" << cleanString(album.Title) << "\", "
-           << "\"" << cleanString(album.Artist) << "\", "
-           << "\"" << cleanString(album.Copyright) << "\", "
-           << "\"" << cleanString(album.AlbumArt.string()) << "\", "
-           << "\"" << cleanString(album.Path.string()) << "\", "
-           << "\"" << cleanString(album.NewPath.string()) << "\", "
-           << "\"" << cleanString(album.Genre) << "\", "
-           << "\"" << cleanString(album.Year) << "\"";
+void MasteringUtility::SaveMarkup(const Albums &albums, const std::filesystem::path &markupFile)
+{
+	try
+	{
+		std::ofstream file(markupFile);
+		if (!file.is_open())
+		{
+			std::cerr << "[SaveMarkup] Could not open output Markup file: " << markupFile << std::endl;
+			return;
+		}
+		file << "; Mastering Utility\n";
+		for (const auto &album : albums)
+		{
+			file << "album " << album.ID << " ("
+			     << "\"" << cleanString(album.Title) << "\", "
+			     << "\"" << cleanString(album.Artist) << "\", "
+			     << "\"" << cleanString(album.Copyright) << "\", "
+			     << "\"" << cleanString(album.AlbumArt.string()) << "\", "
+			     << "\"" << cleanString(album.Path.string()) << "\", "
+			     << "\"" << cleanString(album.NewPath.string()) << "\", "
+			     << "\"" << cleanString(album.Genre) << "\", "
+			     << "\"" << cleanString(album.Year) << "\"";
 
-      if (!album.Comment.empty())
-        file << ", \"" << cleanString(album.Comment) << "\"";
+			if (!album.Comment.empty())
+				file << ", \"" << cleanString(album.Comment) << "\"";
 
-      if (!album.arguments.empty())
-        file << ", \"" << cleanString(album.arguments) << "\"";
+			if (!album.arguments.empty())
+				file << ", \"" << cleanString(album.arguments) << "\"";
 
-      file << ")\n{\n";
+			file << ")\n{\n";
 
-      for (const auto &song : album.SongsList) {
-        file << "    song " << song.ID << " ("
-             << "\"" << cleanString(song.Title) << "\", "
-             << "\"" << cleanString(song.Artist) << "\", " << song.TrackNumber
-             << ", "
-             << "\"" << cleanString(song.Path.string()) << "\", "
-             << "\"" << cleanString(song.NewPath.string()) << "\", "
-             << "\"" << cleanString(song.Codec) << "\", "
-             << "\"" << cleanString(song.Genre) << "\", "
-             << "\"" << cleanString(song.Year) << "\"";
+			for (const auto &song : album.SongsList)
+			{
+				file << "    song " << song.ID << " ("
+				     << "\"" << cleanString(song.Title) << "\", "
+				     << "\"" << cleanString(song.Artist) << "\", " << song.TrackNumber << ", "
+				     << "\"" << cleanString(song.Path.string()) << "\", "
+				     << "\"" << cleanString(song.NewPath.string()) << "\", "
+				     << "\"" << cleanString(song.Codec) << "\", "
+				     << "\"" << cleanString(song.Genre) << "\", "
+				     << "\"" << cleanString(song.Year) << "\"";
 
-        if (!song.Comment.empty())
-          file << ", \"" << trim(song.Comment) << "\"";
+				if (!song.Comment.empty())
+					file << ", \"" << trim(song.Comment) << "\"";
 
-        if (!song.arguments.empty()) {
-          if (song.Comment.empty())
-            file << ", \" \"";
-          file << ", \"" << trim(song.arguments) << "\"";
-        }
+				if (!song.arguments.empty())
+				{
+					if (song.Comment.empty())
+						file << ", \" \"";
+					file << ", \"" << trim(song.arguments) << "\"";
+				}
 
-        file << ")\n";
-      }
+				file << ")\n";
+			}
 
-      file << "}\n\n";
-    }
-  } catch (const std::exception &ex) {
-    std::cerr << "[SaveMarkup] Exception: " << ex.what() << std::endl;
-  } catch (...) {
-    std::cerr << "[SaveMarkup] Unknown exception" << std::endl;
-  }
+			file << "}\n\n";
+		}
+	}
+	catch (const std::exception &ex)
+	{
+		std::cerr << "[SaveMarkup] Exception: " << ex.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "[SaveMarkup] Unknown exception" << std::endl;
+	}
 }
 
-void MasteringUtility::ProcessAlbum(const Album &album) {
-  try {
-    std::cout << "Album: " << album.Title << " (" << album.Artist << ", "
-              << album.Year << ")" << std::endl;
+void MasteringUtility::ProcessAlbum(const Album &album)
+{
+	try
+	{
+		std::cout << "Album: " << album.Title << " (" << album.Artist << ", " << album.Year << ")" << std::endl;
 
-    if (!album.NewPath.empty())
-      std::filesystem::create_directories(album.NewPath);
+		if (!album.NewPath.empty())
+			std::filesystem::create_directories(album.NewPath);
 
-    if (album.SongsList.empty())
-      throw std::runtime_error("No songs in album");
+		if (album.SongsList.empty())
+			throw std::runtime_error("No songs in album");
 
-    auto codec = album.SongsList[0].Codec;
-    if (codec == "wav" || codec == "WAV" || codec == "flac" ||
-        codec == "FLAC") {
-      std::filesystem::path source = album.Path / album.AlbumArt;
-      std::filesystem::path destination =
-          album.NewPath / ("cover" + album.AlbumArt.extension().string());
+		auto codec = album.SongsList[0].Codec;
+		if (codec == "wav" || codec == "WAV" || codec == "flac" || codec == "FLAC")
+		{
+			std::filesystem::path source = album.Path / album.AlbumArt;
+			std::filesystem::path destination = album.NewPath / ("cover" + album.AlbumArt.extension().string());
 
-      std::ifstream src(source, std::ios::binary);
-      if (!src)
-        throw std::runtime_error("Failed to open source: " + source.string());
+			std::ifstream src(source, std::ios::binary);
+			if (!src)
+				throw std::runtime_error("Failed to open source: " + source.string());
 
-      std::ofstream dest(destination, std::ios::binary);
-      if (!dest)
-        throw std::runtime_error("Failed to open destination: " +
-                                 destination.string());
+			std::ofstream dest(destination, std::ios::binary);
+			if (!dest)
+				throw std::runtime_error("Failed to open destination: " + destination.string());
 
-      dest << src.rdbuf();
-    }
+			dest << src.rdbuf();
+		}
 
-    loadCache(album);
+		loadCache(album);
 
-    std::string currentMarkupHash = calculateFileHash(m_markupFile);
-    bool markupChanged = false;
+		std::string currentMarkupHash = calculateFileHash(m_markupFile);
 
-    auto cacheIt = m_albumCaches.find(album.ID);
-    if (cacheIt != m_albumCaches.end()) {
-      if (cacheIt->second.MarkupHash != currentMarkupHash) {
-        if (std::filesystem::exists(getCacheFilePath(album)))
-          std::cout << "Markup file changed - remastering entire album\n";
-        markupChanged = true;
-        cacheIt->second.Songs.clear();
-        cacheIt->second.MarkupHash = currentMarkupHash;
-      }
-    } else {
-      m_albumCaches[album.ID].MarkupHash = currentMarkupHash;
-    }
+		auto cacheIt = m_albumCaches.find(album.ID);
+		if (cacheIt != m_albumCaches.end())
+		{
+			if (cacheIt->second.MarkupHash != currentMarkupHash)
+			{
+				if (std::filesystem::exists(getCacheFilePath(album)))
+					std::cout << "Markup file changed - remastering entire album\n";
+				cacheIt->second.Songs.clear();
+				cacheIt->second.MarkupHash = currentMarkupHash;
+			}
+		}
+		else
+		{
+			m_albumCaches[album.ID].MarkupHash = currentMarkupHash;
+		}
 
-    for (const Song &song : album.SongsList)
-      ProcessSong(song, album);
+		for (const Song &song : album.SongsList)
+			ProcessSong(song, album);
 
-    saveCache(album);
-  } catch (const std::exception &ex) {
-    std::cerr << "[ProcessAlbum] Exception: " << ex.what() << std::endl;
-  } catch (...) {
-    std::cerr << "[ProcessAlbum] Unknown exception" << std::endl;
-  }
+		saveCache(album);
+	}
+	catch (const std::exception &ex)
+	{
+		std::cerr << "[ProcessAlbum] Exception: " << ex.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "[ProcessAlbum] Unknown exception" << std::endl;
+	}
 }
 
-void MasteringUtility::ProcessSong(const Song &song, const Album &album) {
-  try {
-    std::string currentHash = calculateFileHash(song.Path);
-    std::string songId = std::to_string(song.ID);
+void MasteringUtility::ProcessSong(const Song &song, const Album &album)
+{
+	try
+	{
+		std::string currentHash = calculateFileHash(song.Path);
+		std::string songId = std::to_string(song.ID);
 
-    auto &albumCache = m_albumCaches[album.ID];
+		auto &albumCache = m_albumCaches[album.ID];
 
-    auto cacheIt =
-        std::find_if(albumCache.Songs.begin(), albumCache.Songs.end(),
-                     [&songId, &song](const SongCacheEntry &entry) {
-                       return entry.SongID == songId && entry.Path == song.Path;
-                     });
+		auto cacheIt = std::find_if(albumCache.Songs.begin(), albumCache.Songs.end(),
+		                            [&songId, &song](const SongCacheEntry &entry) {
+			                            return entry.SongID == songId && entry.Path == song.Path;
+		                            });
 
-    if (cacheIt != albumCache.Songs.end() && cacheIt->Hash == currentHash) {
-      std::cout << "Skipping: " << song.Title << " (File hash matches cache)\n";
-      return;
-    }
+		if (cacheIt != albumCache.Songs.end() && cacheIt->Hash == currentHash)
+		{
+			std::cout << "Skipping: " << song.Title << " (File hash matches cache)\n";
+			return;
+		}
 
-    if (!m_audioCodecs.contains(trim(song.Codec)))
-      throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
-    if (!std::filesystem::exists(song.Path))
-      throw std::runtime_error("File not found: " + song.Path.string());
-    std::cout << "Encoding: " << song.Title << " -> " << song.NewPath << " ["
-              << song.Codec << "]" << std::endl;
+		if (!m_audioCodecs.contains(trim(song.Codec)))
+			throw std::runtime_error("Invalid audio codec: " + trim(song.Codec));
+		if (!std::filesystem::exists(song.Path))
+			throw std::runtime_error("File not found: " + song.Path.string());
+		std::cout << "Encoding: " << song.Title << " -> " << song.NewPath << " [" << song.Codec << "]" << std::endl;
 
-    std::filesystem::path new_songPath = album.NewPath / song.NewPath;
-    std::filesystem::create_directories(new_songPath.parent_path());
+		std::filesystem::path new_songPath = album.NewPath / song.NewPath;
+		std::filesystem::create_directories(new_songPath.parent_path());
 
-    std::ostringstream cmd;
-    cmd << "ffmpeg -y "
-        << "-i \"" << song.Path.string() << "\" ";
-    if (song.Codec != "flac" && song.Codec != "FLAC" && song.Codec != "wav" &&
-        song.Codec != "WAV")
-      if (!song.Codec.empty() && !album.AlbumArt.empty())
-        cmd << "-i \"" << album.AlbumArt.string()
-            << "\" -map 0:a -map 1:v -id3v2_version 3 ";
-    if (!song.Title.empty())
-      cmd << "-metadata title=\"" << song.Title << "\" ";
-    if (!song.Artist.empty())
-      cmd << "-metadata artist=\"" << song.Artist << "\" ";
-    if (!song.Album.empty())
-      cmd << "-metadata album=\"" << song.Album << "\" ";
-    if (!song.Genre.empty())
-      cmd << "-metadata genre=\"" << song.Genre << "\" ";
-    if (!song.Year.empty())
-      cmd << "-metadata date=\"" << song.Year << "\" ";
-    if (!song.Copyright.empty())
-      cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
-    if (!song.Comment.empty())
-      cmd << "-metadata comment=\"" << song.Comment << "\" ";
-    cmd << "-metadata encoder-info=\"Daniel's Mastering Utility\" ";
-    if (!song.Codec.empty())
-      cmd << "-c:a \"" << song.Codec << "\" ";
+		std::ostringstream cmd;
+		cmd << "ffmpeg -y "
+		    << "-i \"" << song.Path.string() << "\" ";
+		if (song.Codec != "flac" && song.Codec != "FLAC" && song.Codec != "wav" && song.Codec != "WAV")
+			if (!song.Codec.empty() && !album.AlbumArt.empty())
+				cmd << "-i \"" << album.AlbumArt.string() << "\" -map 0:a -map 1:v -id3v2_version 3 ";
+		if (!song.Title.empty())
+			cmd << "-metadata title=\"" << song.Title << "\" ";
+		if (!song.Artist.empty())
+			cmd << "-metadata artist=\"" << song.Artist << "\" ";
+		if (!song.Album.empty())
+			cmd << "-metadata album=\"" << song.Album << "\" ";
+		if (!song.Genre.empty())
+			cmd << "-metadata genre=\"" << song.Genre << "\" ";
+		if (!song.Year.empty())
+			cmd << "-metadata date=\"" << song.Year << "\" ";
+		if (!song.Copyright.empty())
+			cmd << "-metadata copyright=\"" << song.Copyright << "\" ";
+		if (!song.Comment.empty())
+			cmd << "-metadata comment=\"" << song.Comment << "\" ";
+		cmd << "-metadata encoder-info=\"Daniel's Mastering Utility\" ";
+		if (!song.Codec.empty())
+			cmd << "-c:a \"" << song.Codec << "\" ";
 
-    if (!album.arguments.empty())
-      cmd << album.arguments << " ";
-    if (!song.arguments.empty())
-      cmd << song.arguments << " ";
+		if (!album.arguments.empty())
+			cmd << album.arguments << " ";
+		if (!song.arguments.empty())
+			cmd << song.arguments << " ";
 
-    cmd << "-metadata track=\"" << song.TrackNumber << "\" "
-        << "\"" << new_songPath.string() << "\"";
+		cmd << "-metadata track=\"" << song.TrackNumber << "\" "
+		    << "\"" << new_songPath.string() << "\"";
 
-    std::string command = cmd.str();
+		std::string command = cmd.str();
 
 #ifdef _WIN32
-    command += " 2>&1 1>NUL";
-    std::unique_ptr<FILE, int (*)(FILE *)> pipe(_popen(command.c_str(), "r"),
-                                                _pclose);
+		command += " 2>&1 1>NUL";
+		std::unique_ptr<FILE, int (*)(FILE *)> pipe(_popen(command.c_str(), "r"), _pclose);
 #else
-    command += " 2>&1 1>/dev/null";
-    std::unique_ptr<FILE, int (*)(FILE *)> pipe(popen(command.c_str(), "r"),
-                                                pclose);
+		command += " 2>&1 1>/dev/null";
+		std::unique_ptr<FILE, int (*)(FILE *)> pipe(popen(command.c_str(), "r"), pclose);
 #endif
-    if (!pipe) {
-      std::cerr << "  Failed to open pipe for command execution\n";
-      return;
-    }
+		if (!pipe)
+		{
+			std::cerr << "  Failed to open pipe for command execution\n";
+			return;
+		}
 
-    std::string output;
-    char buffer[BUFFER_SIZE];
-    while (fgets(buffer, sizeof(buffer), pipe.get()))
-      output += buffer;
+		std::string output;
+		char        buffer[BUFFER_SIZE];
+		while (fgets(buffer, sizeof(buffer), pipe.get()))
+			output += buffer;
 
-    if (cacheIt != albumCache.Songs.end()) {
-      cacheIt->Hash = currentHash;
-    } else {
-      SongCacheEntry newEntry = {songId, song.Path, currentHash};
-      albumCache.Songs.push_back(newEntry);
-    }
-  } catch (const std::exception &ex) {
-    std::cerr << "[ProcessSong] Exception: " << ex.what() << std::endl;
-  } catch (...) {
-    std::cerr << "[ProcessSong] Unknown exception" << std::endl;
-  }
+		if (cacheIt != albumCache.Songs.end())
+		{
+			cacheIt->Hash = currentHash;
+		}
+		else
+		{
+			SongCacheEntry newEntry = {songId, song.Path, currentHash};
+			albumCache.Songs.push_back(newEntry);
+		}
+	}
+	catch (const std::exception &ex)
+	{
+		std::cerr << "[ProcessSong] Exception: " << ex.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "[ProcessSong] Unknown exception" << std::endl;
+	}
 }
 
-void MasteringUtility::Master(const std::filesystem::path &markupFile) {
-  try {
-    m_markupFile = markupFile;
-    m_audioCodecs = getAudioCodecs();
-    Albums albums;
-    const std::filesystem::path oldDir = std::filesystem::current_path();
-    ParseMarkup(markupFile, albums);
-    for (const auto &album : albums)
-      ProcessAlbum(album);
-    std::filesystem::current_path(oldDir);
-  } catch (const std::exception &ex) {
-    std::cerr << "[Master] Exception: " << ex.what() << std::endl;
-  } catch (...) {
-    std::cerr << "[Master] Unknown exception" << std::endl;
-  }
+void MasteringUtility::Master(const std::filesystem::path &markupFile)
+{
+	try
+	{
+		m_markupFile = markupFile;
+		m_audioCodecs = getAudioCodecs();
+		Albums                      albums;
+		const std::filesystem::path oldDir = std::filesystem::current_path();
+		ParseMarkup(markupFile, albums);
+		for (const auto &album : albums)
+			ProcessAlbum(album);
+		std::filesystem::current_path(oldDir);
+	}
+	catch (const std::exception &ex)
+	{
+		std::cerr << "[Master] Exception: " << ex.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "[Master] Unknown exception" << std::endl;
+	}
 }
 
-std::filesystem::path
-MasteringUtility::getCacheFilePath(const Album &album) const {
-  std::string filename = std::to_string(album.ID) + ".masc";
-  return album.NewPath / ".mas" / filename;
+std::filesystem::path MasteringUtility::getCacheFilePath(const Album &album) const
+{
+	return album.NewPath / ".mas" / std::string(std::to_string(album.ID) + ".masc");
 }
 
-void MasteringUtility::loadCache(const Album &album) {
-  m_albumCaches[album.ID].Songs.clear();
-  std::filesystem::path cachePath = getCacheFilePath(album);
+void MasteringUtility::loadCache(const Album &album)
+{
+	m_albumCaches[album.ID].Songs.clear();
+	std::filesystem::path cachePath = getCacheFilePath(album);
 
-  if (!std::filesystem::exists(cachePath))
-    return;
+	if (!std::filesystem::exists(cachePath))
+		return;
 
-  std::ifstream cacheFile(cachePath);
-  if (!cacheFile.is_open())
-    return;
+	std::ifstream cacheFile(cachePath);
+	if (!cacheFile.is_open())
+		return;
 
-  std::string line;
-  bool firstLine = true;
+	std::string line;
+	bool        firstLine = true;
 
-  while (std::getline(cacheFile, line)) {
-    line = trim(line);
-    if (line.empty() || line[0] == ';')
-      continue;
+	while (std::getline(cacheFile, line))
+	{
+		line = trim(line);
+		if (line.empty() || line[0] == ';')
+			continue;
 
-    if (firstLine) {
-      m_albumCaches[album.ID].MarkupHash = line;
-      firstLine = false;
-      continue;
-    }
+		if (firstLine)
+		{
+			m_albumCaches[album.ID].MarkupHash = line;
+			firstLine = false;
+			continue;
+		}
 
-    std::stringstream ss(line);
-    std::string segment;
-    std::vector<std::string> parts;
+		std::stringstream        ss(line);
+		std::string              segment;
+		std::vector<std::string> parts;
 
-    while (std::getline(ss, segment, ','))
-      parts.push_back(trim(segment));
+		while (std::getline(ss, segment, ','))
+			parts.push_back(trim(segment));
 
-    if (parts.size() == 3) {
-      SongCacheEntry entry;
-      entry.SongID = parts[0];
-      entry.Path = parts[1];
-      entry.Hash = parts[2];
-      m_albumCaches[album.ID].Songs.push_back(entry);
-    }
-  }
+		if (parts.size() == 3)
+		{
+			SongCacheEntry entry;
+			entry.SongID = parts[0];
+			entry.Path = parts[1];
+			entry.Hash = parts[2];
+			m_albumCaches[album.ID].Songs.push_back(entry);
+		}
+	}
 }
 
-void MasteringUtility::saveCache(const Album &album) const {
-  std::filesystem::path cachePath = getCacheFilePath(album);
-  std::filesystem::create_directories(cachePath.parent_path());
+void MasteringUtility::saveCache(const Album &album) const
+{
+	std::filesystem::path cachePath = getCacheFilePath(album);
+	std::filesystem::create_directories(cachePath.parent_path());
 
-  std::ofstream cacheFile(cachePath);
+	std::ofstream cacheFile(cachePath);
 
-  if (!cacheFile.is_open()) {
-    std::cerr << "[SaveCache] Could not open cache file for writing: "
-              << cachePath << std::endl;
-    return;
-  }
+	if (!cacheFile.is_open())
+	{
+		std::cerr << "[SaveCache] Could not open cache file for writing: " << cachePath << std::endl;
+		return;
+	}
 
-  cacheFile << "; Mastering Utility Cache File\n";
+	cacheFile << "; Mastering Utility Cache File\n";
 
-  auto it = m_albumCaches.find(album.ID);
-  if (it != m_albumCaches.end()) {
-    cacheFile << it->second.MarkupHash << "\n";
+	auto it = m_albumCaches.find(album.ID);
+	if (it != m_albumCaches.end())
+	{
+		cacheFile << it->second.MarkupHash << "\n";
 
-    for (const auto &entry : it->second.Songs) {
-      cacheFile << entry.SongID << ", " << entry.Path.string() << ", "
-                << entry.Hash << "\n";
-    }
-  }
+		for (const auto &entry : it->second.Songs)
+		{
+			cacheFile << entry.SongID << ", " << entry.Path.string() << ", " << entry.Hash << "\n";
+		}
+	}
 }

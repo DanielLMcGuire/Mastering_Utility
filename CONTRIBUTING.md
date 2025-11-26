@@ -12,22 +12,40 @@ Thanks for wanting to contribute! Feel free to contribute to this file as well a
 ## Code Style (if language allows)
 
 * Keep code **readable**; functionality should be clear without comments.
+* Use Microsoft style for C++ code. (See [.clang-format](/.clang-format))
 * For **single-line** if/else statements, **do not use brackets**.
 * Avoid comments unless something truly cannot be understood.
 * AI-generated code is allowed but **must be reviewed** and flagged in the commit description.
 * New C++ public members require Doxygen comments.
-* Run rustfmt on all rust code before commiting.
+* Use clangd formatter for C++ code before commiting.
+* Use rustfmt for rust code before commiting.
+
 ```cpp
 /**
  * @brief Example Function
  * @param a Parameter a
  * Adds a + 5 if a >= 5
  */
-int exampleFunction(int a) {
+int exampleFunction(int a)
+{
     if (a >= 5)
         return a + 5;
     else
         return 0;
+}
+```
+
+```rust
+// Note: rustfmt may format differently
+
+/// Example function
+/// Adds a + 5 if a >= 5
+fn example_function(a: i32) -> i32 {
+    if a >= 5 {
+        return a + 5;
+    } else {
+        return 0;
+    }
 }
 ```
 
