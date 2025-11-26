@@ -58,6 +58,11 @@ bool NTFS(const std::filesystem::path &path)
 
 	return false;
 }
+#else  // !_WIN32
+bool NTFS(const std::filesystem::path &path)
+{
+	return false;
+}
 #endif // _WIN32
 
 /**
@@ -680,17 +685,11 @@ void MasteringUtility::Master(const std::filesystem::path &markupFile)
 
 std::filesystem::path MasteringUtility::getCacheFilePath(const Album &album) const
 {
-#ifdef _WIN32 // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c54dec26-1551-4d3a-a0ea-4fa40f848eb3
-	// Save relative to markup file
-	return NTFS(album.markup) ? album.markup.string() + ":MASC" + std::to_string(album.ID)
-	                          : album.markup.parent_path().string() + "/.mas/" + std::to_string(album.ID) + ".masc";
-
-#else  // !_WIN32
-	// Save relative to destination directory
-	return album.NewPath / ".mas" / std::string(std::to_string(album.ID) + ".masc");
-#endif // _WIN32
+	// See info on file streams in NTFS:
+	// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c54dec26-1551-4d3a-a0ea-4fa40f848eb3
+	return NTFS(album.markup) ? album.NewPath.string() + ":MASC" + std::to_string(album.ID)
+	                          : album.NewPath / ".mas" / std::string(std::to_string(album.ID) + ".masc");
 }
-
 void MasteringUtility::loadCache(const Album &album)
 {
 	m_albumCaches[album.ID].Songs.clear();
