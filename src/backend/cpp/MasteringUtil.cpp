@@ -34,6 +34,32 @@
 #include <string>
 #include <unordered_set>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <windef.h>
+
+/**
+ * @brief Check if a path is on an NTFS volume
+ *
+ * @param path Path to check
+ * @return true if path is on an NTFS volume
+ * @return false if path is not on an NTFS volume
+ */
+bool NTFS(const std::filesystem::path &path)
+{
+	auto                 root = path.root_name().wstring() + L"\\";
+	std::vector<wchar_t> fsNameBuffer(MAX_PATH, L'\0');
+
+	if (GetVolumeInformationW(root.c_str(), nullptr, 0, nullptr, nullptr, nullptr, fsNameBuffer.data(),
+	                          static_cast<DWORD>(fsNameBuffer.size())))
+	{
+		return std::wstring(fsNameBuffer.data()) == L"NTFS";
+	}
+
+	return false;
+}
+#endif // _WIN32
+
 /**
  * @brief Grab file modifed information
  * @param filePath File
@@ -654,7 +680,15 @@ void MasteringUtility::Master(const std::filesystem::path &markupFile)
 
 std::filesystem::path MasteringUtility::getCacheFilePath(const Album &album) const
 {
+#ifdef _WIN32 // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c54dec26-1551-4d3a-a0ea-4fa40f848eb3
+	// Save relative to markup file
+	return NTFS(album.markup) ? album.markup.string() + ":MASC" + std::to_string(album.ID)
+	                          : album.markup.parent_path().string() + "/.mas/" + std::to_string(album.ID) + ".masc";
+
+#else  // !_WIN32
+	// Save relative to destination directory
 	return album.NewPath / ".mas" / std::string(std::to_string(album.ID) + ".masc");
+#endif // _WIN32
 }
 
 void MasteringUtility::loadCache(const Album &album)
