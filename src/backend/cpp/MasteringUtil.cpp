@@ -350,6 +350,17 @@ void MasteringUtility::ParseMarkup(const std::filesystem::path &markupFile, Albu
 							currentAlbum.Comment = cleanString(args[8]);
 						if (args.size() > 9)
 							currentAlbum.arguments = sanitizeArguments(cleanString(args[9]));
+						if (args.size() > 10)
+						{
+							std::string AFS = cleanString(args[10]);
+							if (AFS == "true" || AFS == "TRUE" || AFS == "yes" || AFS == "YES" || AFS == "1")
+								currentAlbum.AFS = true;
+							else if (AFS == "false" || AFS == "FALSE" || AFS == "no" || AFS == "NO" || AFS == "0" ||
+							         AFS == "")
+								currentAlbum.AFS = false;
+							else
+								throw std::runtime_error("Invalid AFS value: " + AFS + " (" + line + " token 11)");
+						}
 					}
 				}
 			}
@@ -450,11 +461,23 @@ void MasteringUtility::SaveMarkup(const Albums &albums, const std::filesystem::p
 			     << "\"" << cleanString(album.Genre) << "\", "
 			     << "\"" << cleanString(album.Year) << "\"";
 
-			if (!album.Comment.empty())
-				file << ", \"" << cleanString(album.Comment) << "\"";
+			bool hasComment = !album.Comment.empty();
+			bool hasArgs = !album.arguments.empty();
 
-			if (!album.arguments.empty())
+			if (hasComment && hasArgs)
+			{
+				file << ", \"" << cleanString(album.Comment) << "\"";
 				file << ", \"" << cleanString(album.arguments) << "\"";
+				file << ", \"" << (album.AFS ? "true" : "false") << "\"";
+			}
+			else if (hasComment && !hasArgs)
+				file << ", \"" << cleanString(album.Comment) << "\"";
+			else if (!hasComment && hasArgs)
+			{
+				file << ", \"\"";
+				file << ", \"" << cleanString(album.arguments) << "\"";
+				file << ", \"" << (album.AFS ? "true" : "false") << "\"";
+			}
 
 			file << ")\n{\n";
 
@@ -687,8 +710,11 @@ std::filesystem::path MasteringUtility::getCacheFilePath(const Album &album) con
 {
 	// See info on file streams in NTFS:
 	// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c54dec26-1551-4d3a-a0ea-4fa40f848eb3
-	return NTFS(album.markup) ? album.NewPath.string() + ":MASC" + std::to_string(album.ID)
-	                          : (album.NewPath / ".mas" / (std::to_string(album.ID) + ".masc")).string();
+	if (album.AFS)
+		return NTFS(album.markup) ? album.NewPath.string() + ":MASC" + std::to_string(album.ID)
+		                          : (album.NewPath / ".mas" / (std::to_string(album.ID) + ".masc")).string();
+	else
+		return (album.NewPath / ".mas" / (std::to_string(album.ID) + ".masc")).string();
 }
 void MasteringUtility::loadCache(const Album &album)
 {
@@ -749,7 +775,10 @@ void MasteringUtility::saveCache(const Album &album) const
 		return;
 	}
 
-	cacheFile << "; Mastering Utility Cache File\n";
+	if (album.AFS)
+		cacheFile << "Mastering Utility Cache File Stream\n";
+	else
+		cacheFile << "Mastering Utility Cache File\n";
 
 	auto it = m_albumCaches.find(album.ID);
 	if (it != m_albumCaches.end())

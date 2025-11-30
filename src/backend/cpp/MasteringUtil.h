@@ -111,6 +111,8 @@ class MasteringUtility
 
 		std::filesystem::path markup;
 
+		bool AFS;
+
 		/// @brief Equality operator for Album
 		bool operator==(const Album &other) const
 		{
