@@ -1,4 +1,9 @@
 fn main() {
+	println!("cargo:rerun-if-changed=src/backend/rs/MasteringUtil.rs");
+    println!("cargo:rerun-if-changed=src/backend/cpp/MasteringUtil.cpp");
+    println!("cargo:rerun-if-changed=src/backend/cpp");
+    println!("cargo:rerun-if-changed=src/backend/rs");
+
     cxx_build::bridge("src/backend/rs/MasteringUtil.rs")
         .file("src/backend/cpp/MasteringUtil.cpp")
         .include("src/backend/cpp")
