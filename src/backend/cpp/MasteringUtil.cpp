@@ -37,6 +37,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <windef.h>
+#endif
 
 /**
  * @brief Check if a path is on an NTFS volume
@@ -46,6 +47,7 @@
  * @return false if path is not on an NTFS volume
  */
 bool NTFS(const std::filesystem::path &path)
+#ifdef _WIN32
 {
 	auto                 root = path.root_name().wstring() + L"\\";
 	std::vector<wchar_t> fsNameBuffer(MAX_PATH, L'\0');
@@ -59,7 +61,6 @@ bool NTFS(const std::filesystem::path &path)
 	return false;
 }
 #else  // !_WIN32
-bool NTFS(const std::filesystem::path &path)
 {
 	return false;
 }
